@@ -14,4 +14,12 @@ class Portal(App):
         yield ChatArea()
 
     def on_mount(self):
+        self.opened_server = None
         self.query_one(Chat).styles.display = "none"
+
+    def open_server(self, server_info):
+        chat = self.query_one(Chat)
+        welcome = self.query_one(Welcome)
+
+        chat.styles.display = "block"
+        welcome.styles.display = "none"
