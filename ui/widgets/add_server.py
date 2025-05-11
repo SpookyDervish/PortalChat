@@ -50,6 +50,7 @@ class AddServer(ModalScreen):
     """
     
     def on_mount(self):
+        self.selected_server = None
         table: DataTable = self.query_one("#serv-table")
         table.add_columns("Title", "# Online", "IP")
         self.find_servers_worker = self.find_servers(table)
@@ -65,8 +66,13 @@ class AddServer(ModalScreen):
         join_server_btn = self.query_one("#join-serv")
 
         table = event.data_table
-        row = table.get_row(event.row_key)
+        self.selected_server = table.get_row(event.row_key)
         join_server_btn.disabled = False
+
+    @on(Button.Pressed)
+    def button_pressed(self, event: Button.Pressed):
+        if event.button.id == "join-serv" and self.selected_server is not None:
+            self.dismiss()
 
     def on_key(self, event):
         if event.key == "escape":

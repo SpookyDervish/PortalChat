@@ -14,6 +14,9 @@ from time import sleep
 class Portal(App):
     def compose(self) -> ComposeResult:
         yield ServerList()
-        #yield Chat()
+        yield Chat()
         yield Welcome()
         yield ChatArea()
+
+    def on_mount(self):
+        self.query_one(Chat).styles.display = "none"
