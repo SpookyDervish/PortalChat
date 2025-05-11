@@ -78,7 +78,7 @@ class AddServer(ModalScreen):
             sidebar = self.app.query_one("#sidebar")
             icons = sidebar.query_one("#icons")
 
-            icons.mount(Icon(self.selected_server))
+            icons.mount(Icon(self.selected_server, True))
 
     def on_key(self, event):
         if event.key == "escape":

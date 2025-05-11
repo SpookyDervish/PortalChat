@@ -32,6 +32,9 @@ class ServerList(Vertical):
         elif event.button.id == "settings-btn":
             self.app.notify("Sorry! The settings menu isn't implemented yet!", title="Woops!", severity="warning")
 
+        if "server-btn" in event.button.classes:
+            self.app.open_server(event.button.info)
+
     def compose(self):
         yield VerticalScroll(id="icons")
         yield Rule()

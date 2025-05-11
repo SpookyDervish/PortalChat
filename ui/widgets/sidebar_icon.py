@@ -10,7 +10,7 @@ class Icon(Button):
     }
     """
 
-    def __init__(self, info: dict):
+    def __init__(self, info: dict, is_server):
         self.info = info
         self.server_name = info[0]
-        super().__init__(abbreviate(self.server_name), tooltip=self.server_name, classes="side-btn")
+        super().__init__(abbreviate(self.server_name), tooltip=self.server_name, classes=f"side-btn{' server-btn' if is_server else ''}")
