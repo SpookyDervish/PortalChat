@@ -3,6 +3,7 @@ from textual.widgets import Static, DataTable, LoadingIndicator, Button
 from textual.containers import Vertical
 from textual import work, on
 
+from ui.widgets.sidebar_icon import Icon
 from server.scan import scan_network, get_subnet_network, get_subnet
 
 
@@ -73,6 +74,11 @@ class AddServer(ModalScreen):
     def button_pressed(self, event: Button.Pressed):
         if event.button.id == "join-serv" and self.selected_server is not None:
             self.dismiss()
+
+            sidebar = self.app.query_one("#sidebar")
+            icons = sidebar.query_one("#icons")
+
+            icons.mount(Icon(self.selected_server[0]))
 
     def on_key(self, event):
         if event.key == "escape":
