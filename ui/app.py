@@ -99,10 +99,21 @@ class Portal(App):
     @work(thread=True)
     def packet_handler(self):
         chat = self.query_one(Chat)
+        channel_list = self.query_one(ChannelList)
+
         while True:
             packet = self.packet_queue.get()
             if packet.packet_type == PacketType.MESSAGE_RECV:
                 self.mount_msg(chat, packet.data)
+            elif packet.packet_type == PacketType.DATA:
+                if packet.data["type"] == "SERVER_CHANNELS":
+                    channel_list.clear()
+                    for channel in packet.data["data"]:
+                        channel_id = channel[0]
+                        channel_name = channel[1]
+
+                        channel_list.root.add_leaf(channel_name, data=channel_id)
+                    channel_list.root.expand_all()
 
     @work(thread=True)
     def ping_loop(self):
@@ -147,15 +158,9 @@ class Portal(App):
             return
 
         self.n = Network(server_info[2]) # start a connection to the server
-        channels = self.n.send(Packet(PacketType.GET, {"type": "CHANNELS"})).data
+        self.packet_queue.put(self.n.send(Packet(PacketType.GET, {"type": "CHANNELS"})))
 
-        channel_list.clear()
-        for channel in channels:
-            channel_id = channel[0]
-            channel_name = channel[1]
-
-            channel_list.root.add_leaf(channel_name, data=channel_id)
-        channel_list.root.expand_all()
+        
 
         chat.styles.display = "block"
         channel_list.styles.display = "block"

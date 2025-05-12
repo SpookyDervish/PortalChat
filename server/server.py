@@ -104,13 +104,13 @@ class Server:
                 return Packet(PacketType.PING, "HELLOOOo")
             elif packet.packet_type == PacketType.GET:
                 if packet.data["type"] == "INFO":
-                    return Packet(PacketType.DATA, self.server_info)
+                    return Packet(PacketType.DATA, {"data": self.server_info, "type": "SERVER_INFO"})
                 elif packet.data["type"] == "CHANNELS": # TODO: create private channels
                     channels = self.db.get_channels_in_server(self.db.get_server_by_name(self.server_info["title"])[0])
-                    return Packet(PacketType.DATA, channels)
+                    return Packet(PacketType.DATA, {"data": channels, "type": "SERVER_CHANNELS"})
                 elif packet.data["type"] == "MESSAGES": # TODO: don't let the user see message history of private channels
                     messages = self.db.get_messages_in_channel(packet.data["channel_id"])
-                    return Packet(PacketType.DATA, messages)
+                    return Packet(PacketType.DATA, {"data": messages, "type": "SERVER_MSGS"})
                 else:
                     return Packet(PacketType.ERROR, "Invalid GET type!")
             elif packet.packet_type == PacketType.MESSAGE_SEND:
