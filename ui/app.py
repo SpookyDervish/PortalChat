@@ -18,7 +18,7 @@ class Portal(App):
         yield ServerList(id="sidebar")
         yield Chat(channel)
         yield Welcome()
-        yield ChatArea()
+        #yield ChatArea()
 
     def on_mount(self):
         self.opened_server = None
