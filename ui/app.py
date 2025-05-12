@@ -54,7 +54,7 @@ class Portal(App):
         chat_area = self.query_one(ChatArea)
 
         if event.node == event.node.tree.root:
-            self.packet_queue.put(self.n.send(Packet(PacketType.GET, {"type": "INFO"}, tag="server-overview")).data)
+            self.packet_queue.put(self.n.send(Packet(PacketType.GET, {"type": "INFO"}, tag="server-overview")))
             chat.display = "none"
             chat_area.display = 'none'
         else:
