@@ -122,7 +122,7 @@ class Portal(App):
             while self.is_open:
                 response = self.n.send(Packet(PacketType.PING))
                 self.packet_queue.put(response)
-        except ConnectionResetError: # server was closed
+        except (ConnectionResetError, EOFError): # server was closed
             server_list = self.query_one(ServerList)
             for button in server_list.query_one("#icons").children:
                 if "server-btn" in button.classes:
