@@ -58,7 +58,8 @@ def scan_ip(ip):
 
         # Attempt to connect to the given IP and port
         result = sock.connect_ex((str(ip), PORT))
-    
+
+        print(result)
         if result == 0:
             print("detected! getting info...")
             # get info about the server
