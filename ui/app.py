@@ -113,7 +113,7 @@ class Portal(App):
                 chat.remove_children()
 
                 # show starting message
-                chat.mount(Label(f"[b][u]Welcome![/u][/b]\n[dim]This is the start of the #{data["channel_name"]} channel.[/dim]\n[dim]Portal has only [bold]just started development[/bold], so watch out for bugs![/dim]"))
+                chat.mount(Label(f"[b][u]Welcome![/u][/b]\n[dim]This is the start of the #{data['channel_name']} channel.[/dim]\n[dim]Portal has only [bold]just started development[/bold], so watch out for bugs![/dim]"))
                 chat.mount(Rule(classes="start-rule"))
 
                 # add new messages
