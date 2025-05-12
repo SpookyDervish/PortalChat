@@ -146,7 +146,7 @@ class Server:
         while True:
             try:
                 data = pickle.loads(conn.recv(2048))
-                self.log(f"Receive: {data}")
+                self.log(f"Receive: {data}", 1)
                 if not isinstance(data, Packet):
                     break
 
@@ -156,7 +156,7 @@ class Server:
                 reply = self.handle_packet(data, conn)
 
                 if reply != None:
-                    self.log(f"Send   : {reply}")
+                    self.log(f"Send   : {reply}", 1)
 
                     conn.sendall(pickle.dumps(reply))
             except (socket.error, EOFError) as e:
