@@ -28,7 +28,7 @@ class Server:
         self.log("Doing initial setup...", 1)
         self.clients: list[socket.socket] = []
         self.host = host
-        self.port = 5445
+        self.port = 5555
 
         self.log("Getting database...")
         self.db = Database()

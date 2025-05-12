@@ -9,7 +9,7 @@ except ModuleNotFoundError:
     from packet import Packet, PacketType
 
 # The port to scan for
-PORT = 5445
+PORT = 5555
 # Timeout for the connection attempt
 TIMEOUT = 1
 # Number of threads to limit the max parallel scans
