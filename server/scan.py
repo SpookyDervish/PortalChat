@@ -84,9 +84,18 @@ def scan_network(network):
         # Process results as they are completed
         for future in concurrent.futures.as_completed(futures):
             ip = futures[future]
+            print("Scanning " + str(ip) + "...")
             try:
                 result = future.result()
                 if result:
                     yield result
             except Exception as e:
                 yield f"Error scanning {ip}: {e}"
+
+
+if __name__ == "__main__":
+    local_ip, netmask = get_subnet()
+    network = get_subnet_network(local_ip, netmask)
+
+    for server in scan_network(network):
+        print("FOUND: " + server)
