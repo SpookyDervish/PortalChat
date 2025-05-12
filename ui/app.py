@@ -87,6 +87,14 @@ class Portal(App):
         
         await chat.mount(Message(response.data["message"], response.data["sender_name"], response.data["timestamp"]))
 
+    @work
+    async def mount_msg(self, chat, data):
+        chat.mount(Message(
+            data["message"],
+            data["sender_name"],
+            data["timestamp"]
+        ))
+
     @work(thread=True)
     def ping_loop(self):
         chat = self.query_one(Chat)
@@ -96,11 +104,8 @@ class Portal(App):
                 response = self.n.send(Packet(PacketType.PING))
 
                 if response.packet_type == PacketType.MESSAGE_RECV and response.data["channel_id"] == self.channel_id:
-                    chat.mount(Message(
-                        response.data["message"],
-                        response.data["sender_name"],
-                        response.data["timestamp"]
-                    ))
+                    self.mount_msg(chat, response.data)
+
                 sleep(1)
         except ConnectionResetError: # server was closed
             server_list = self.query_one(ServerList)
