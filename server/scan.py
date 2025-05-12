@@ -32,7 +32,6 @@ def get_subnet():
     for interface, addrs in interfaces.items():
         if "lo" in interface: continue # loopback
 
-        print(interface)
         for addr in addrs:
             if addr.family == socket.AF_INET and not addr.address.startswith("127."):
                 local_ip = addr.address
@@ -60,8 +59,8 @@ def scan_ip(ip):
         sock.settimeout(TIMEOUT)
 
         # Attempt to connect to the given IP and port
-        print((str(ip), PORT))
         result = sock.connect_ex((str(ip), PORT))
+        print(f"{(str(ip), PORT)} : {result}")
 
         if result == 0:
             # get info about the server
