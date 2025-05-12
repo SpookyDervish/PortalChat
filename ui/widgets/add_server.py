@@ -60,8 +60,7 @@ class AddServer(ModalScreen):
     def find_servers(self, table: DataTable):
         local_ip, netmash = get_subnet()
         for server in scan_network(get_subnet_network(local_ip, netmash)):
-            server = server["data"] # we don't care for anything else in the server data provided
-            table.add_row(server["title"], server["online"], server["ip"])
+            table.add_row(server["data"]["title"], server["data"]["online"], server["ip"])
 
         # remove loading text when done searching for servers
         self.query_one("#loading1").remove()
