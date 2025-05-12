@@ -112,8 +112,10 @@ class Server:
                     channels = self.db.get_channels_in_server(self.db.get_server_by_name(self.server_info["title"])[0])
                     reply = Packet(PacketType.DATA, {"data": channels, "type": "SERVER_CHANNELS"})
                 elif packet.data["type"] == "MESSAGES": # TODO: don't let the user see message history of private channels
-                    messages = self.db.get_messages_in_channel(packet.data["channel_id"])
-                    reply = Packet(PacketType.DATA, {"data": messages, "type": "SERVER_MSGS"})
+                    channel_id = packet.data["channel_id"]
+                    messages = self.db.get_messages_in_channel(channel_id)
+                    server = self.db.get_server_from_channel(channel_id)
+                    reply = Packet(PacketType.DATA, {"data": {"messages": messages, "channel_name": server[1]}, "type": "SERVER_MSGS"})
                 else:
                     reply = Packet(PacketType.ERROR, "Invalid GET type!")
             elif packet.packet_type == PacketType.MESSAGE_SEND:

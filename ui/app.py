@@ -69,18 +69,9 @@ class Portal(App):
         data = event.node.data
         self.channel_id = data
 
-        messages = self.n.send(Packet(PacketType.GET, {"type": "MESSAGES", "channel_id": self.channel_id})).data["data"]
+        self.packet_queue.put(self.n.send(Packet(PacketType.GET, {"type": "MESSAGES", "channel_id": self.channel_id}, tag="servr-msgs")))
         
-        # delete other messages
-        chat.remove_children()
-
-        # show starting message
-        chat.mount(Label(f"[b][u]Welcome![/u][/b]\n[dim]This is the start of the #{event.node.label} channel.[/dim]\n[dim]Portal has only [bold]just started development[/bold], so watch out for bugs![/dim]"))
-        chat.mount(Rule(classes="start-rule"))
-
-        # add new messages
-        for message in messages:
-            chat.mount(Message(message[1], message[3], datetime.strptime(message[2], "%Y-%m-%d %H:%M:%S")))
+        
 
     @work
     async def send_message(self, message: str):
@@ -116,6 +107,18 @@ class Portal(App):
             elif packet.tag == "server-overview":
                 server_info = packet.data["data"]
                 self.mount(ServerOverview(server_info["data"]), after=self.query_one(ChannelList))
+            elif packet.tag == "servr-msgs":
+                data = packet.data["data"]
+                # delete other messages
+                chat.remove_children()
+
+                # show starting message
+                chat.mount(Label(f"[b][u]Welcome![/u][/b]\n[dim]This is the start of the #{data["channel_name"]} channel.[/dim]\n[dim]Portal has only [bold]just started development[/bold], so watch out for bugs![/dim]"))
+                chat.mount(Rule(classes="start-rule"))
+
+                # add new messages
+                for message in data["messages"]:
+                    chat.mount(Message(message[1], message[3], datetime.strptime(message[2], "%Y-%m-%d %H:%M:%S")))
 
     @work(thread=True)
     def ping_loop(self):

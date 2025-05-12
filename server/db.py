@@ -94,6 +94,16 @@ class Database:
     def close(self):
         self.conn.close()
 
+    def get_server_from_channel(self, channel_id: id):
+        self.cur.execute("""
+            SELECT s.*
+            FROM servers s
+            JOIN channels c ON s.server_id = c.server_id
+            WHERE c.channel_id = ?
+            LIMIT 1
+        """, (channel_id,))
+        return self.cur.fetchone()
+
     def get_user_by_name(self, username: str):
         self.cur.execute("""
             SELECT * FROM users
