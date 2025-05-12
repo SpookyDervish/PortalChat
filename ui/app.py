@@ -53,7 +53,7 @@ class Portal(App):
         chat = self.query_one(Chat)
         chat_area = self.query_one(ChatArea)
 
-        if event.node == event.node.tree.root:
+        if event.node == event.node.tree.root or event.node.data == None:
             self.packet_queue.put(self.n.send(Packet(PacketType.GET, {"type": "INFO"}, tag="server-overview")))
             chat.display = "none"
             chat_area.display = 'none'
@@ -66,10 +66,10 @@ class Portal(App):
             except:
                 pass
 
-        data = event.node.data
-        self.channel_id = data
+            data = event.node.data
+            self.channel_id = data
 
-        self.packet_queue.put(self.n.send(Packet(PacketType.GET, {"type": "MESSAGES", "channel_id": self.channel_id}, tag="servr-msgs")))
+            self.packet_queue.put(self.n.send(Packet(PacketType.GET, {"type": "MESSAGES", "channel_id": self.channel_id}, tag="servr-msgs")))
         
         
 
@@ -127,6 +127,7 @@ class Portal(App):
             while self.is_open:
                 response = self.n.send(Packet(PacketType.PING))
                 self.packet_queue.put(response)
+                sleep(0.5)
         except (ConnectionResetError, EOFError): # server was closed
             server_list = self.query_one(ServerList)
             for button in server_list.query_one("#icons").children:
