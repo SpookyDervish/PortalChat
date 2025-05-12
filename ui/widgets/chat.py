@@ -2,8 +2,7 @@ from textual.containers import VerticalScroll, Vertical
 from textual.widgets import Label, Rule
 from datetime import datetime
 
-import random, string
-
+from api.channel import Channel
 from ui.widgets.image import Image
 
 
@@ -43,8 +42,14 @@ class Chat(VerticalScroll):
     }
     """
     
+    def __init__(self, channel: Channel):
+        super().__init__()
+        self.channel = channel
 
-    def compose(self):
-        yield Label("[b u]Welcome![/b u]\n[d]This thing is kinda in [red]BETA[/red], so watch out for bugs![/d]")
-        yield Rule()
-        
+    def on_mount(self):
+        for message in self.channel.messages:
+            self.mount(Message(
+                message.content,
+                message.sender.user_name,
+                message.send_time
+            ))
