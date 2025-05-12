@@ -101,12 +101,10 @@ class Portal(App):
 
         try:
             while self.is_open:
-                response = self.n.send(Packet(PacketType.PING))
+                response = self.n.send(Packet(PacketType.WAIT))
 
                 if response.packet_type == PacketType.MESSAGE_RECV and response.data["channel_id"] == self.channel_id:
                     self.mount_msg(chat, response.data)
-
-                sleep(1)
         except ConnectionResetError: # server was closed
             server_list = self.query_one(ServerList)
             for button in server_list.query_one("#icons").children:

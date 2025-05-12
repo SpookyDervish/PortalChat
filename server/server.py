@@ -98,7 +98,9 @@ class Server:
 
     def handle_packet(self, packet: Packet, conn: socket.socket):
         try:
-            if packet.packet_type == PacketType.PING:
+            if packet.packet_type == PacketType.WAIT:
+                return None
+            elif packet.packet_type == PacketType.PING:
                 return Packet(PacketType.PING, "HELLOOOo")
             elif packet.packet_type == PacketType.GET:
                 if packet.data["type"] == "INFO":
@@ -147,9 +149,10 @@ class Server:
 
                 reply = self.handle_packet(data, conn)
 
-                self.log(f"Send   : {reply}")
+                if reply != None:
+                    self.log(f"Send   : {reply}")
 
-                conn.sendall(pickle.dumps(reply))
+                    conn.sendall(pickle.dumps(reply))
             except (socket.error, EOFError) as e:
                 self.log(f"A client created a socket error. The connection will be closed.\n\t- Client: {conn.getsockname()}\n\t- Error: {e}", 3)
                 break
