@@ -57,7 +57,7 @@ class Portal(App):
             server_info = self.n.send(Packet(PacketType.GET, {"type": "INFO"})).data
             chat.display = "none"
             chat_area.display = 'none'
-            self.mount(ServerOverview(server_info), after=self.query_one(ChannelList))
+            self.mount(ServerOverview(server_info["data"]), after=self.query_one(ChannelList))
         else:
             chat.display = "block"
             chat_area.display = 'block'
@@ -70,7 +70,7 @@ class Portal(App):
         data = event.node.data
         self.channel_id = data
 
-        messages = self.n.send(Packet(PacketType.GET, {"type": "MESSAGES", "channel_id": self.channel_id})).data
+        messages = self.n.send(Packet(PacketType.GET, {"type": "MESSAGES", "channel_id": self.channel_id})).data["data"]
         
         # delete other messages
         chat.remove_children()
