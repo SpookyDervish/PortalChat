@@ -4,7 +4,8 @@ from rich import print
 
 class Database:
     def __init__(self):
-        self.conn = sqlite3.connect("portal_db.db")
+        # ! Disabling check_same_thread fixes a lot of issues, but corruption could be a REALLY big problem, might need to check this.
+        self.conn = sqlite3.connect("portal_db.db", check_same_thread=False)
         self.cur = self.conn.cursor()
 
         # Create a table for servers
@@ -73,6 +74,15 @@ class Database:
         );
         ''')
         self.commit()
+
+        server_id = self.get_server_by_name("Testing Server")
+        if not server_id:
+            server_id = self.create_server("Testing Server")
+
+        if not self.get_user_by_name("user"):
+            self.create_user("user")
+        if not self.get_channel_by_name(server_id, "general"):
+            self.create_channel_in_server(server_id, "general")
 
     def commit(self):
         self.conn.commit()

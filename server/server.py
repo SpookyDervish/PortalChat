@@ -2,6 +2,7 @@ import socket
 import pickle
 import sys
 from _thread import start_new_thread
+from datetime import datetime
 
 from rich.traceback import install
 from rich.console import Console
@@ -24,7 +25,7 @@ class Server:
         }
 
         self.log("Doing initial setup...", 1)
-        self.clients = []
+        self.clients: list[socket.socket] = []
         self.host = host
         self.port = 5445
 
@@ -62,9 +63,26 @@ class Server:
                 continue
 
             self.server_info["online"] += 1
+            self.clients.append(conn)
 
             self.log(f"New connection! Address: {addr}")
             start_new_thread(self.handle_client, tuple([conn]))
+
+    def send_message(self, message: str, channel_id: int, sender_name: str = None):
+        """Send a message to all users and save the message to the DB.
+
+        Args:
+            message (str): The string contents of the message
+            sender_name (str, optional): What is the name of the user who sent the message? Defaults to a system message with no sender.
+        """
+        for user in self.clients:
+            self.db.create_message_in_channel(channel_id, self.db.get_user_by_name(sender_name)[0], message)
+            self.db.commit()
+
+            user.send(pickle.dumps(Packet(
+                PacketType.MESSAGE_RECV,
+                {"message": message, "sender_name": sender_name, "timestamp": datetime.now()}
+            )))
 
     def interactive_terminal(self):
         while True:
@@ -74,16 +92,31 @@ class Server:
                 self.sock.close()
                 break
 
-    def handle_packet(self, packet: Packet):
-        if packet.packet_type == PacketType.PING:
-            return Packet(PacketType.PING, "HELLOOOo")
-        elif packet.packet_type == PacketType.GET:
-            if packet.data == "INFO":
-                return Packet(PacketType.DATA, self.server_info)
+    def handle_packet(self, packet: Packet, conn: socket.socket):
+        try:
+            if packet.packet_type == PacketType.PING:
+                return Packet(PacketType.PING, "HELLOOOo")
+            elif packet.packet_type == PacketType.GET:
+                if packet.data["type"] == "INFO":
+                    return Packet(PacketType.DATA, self.server_info)
+                elif packet.data["type"] == "CHANNELS":
+                    channels = self.db.get_channels_in_server(self.db.get_server_by_name(self.server_info["title"])[0])
+                    return Packet(PacketType.DATA, channels)
+                elif packet.data["type"] == "MESSAGES":
+                    messages = self.db.get_messages_in_channel(packet.data["channel_id"])
+                    return Packet(PacketType.DATA, messages)
+                else:
+                    return Packet(PacketType.ERROR, "Invalid GET type!")
+            elif packet.packet_type == PacketType.MESSAGE_SEND:
+                msg = packet.data["message"].strip()
+                channel_id = packet.data["channel_id"]
+                
+                self.send_message(msg, channel_id, "user")
             else:
-                return Packet(PacketType.ERROR, "Invalid GET type!")
-        else:
-            return Packet(PacketType.ERROR, "Invalid packet type!")
+                return Packet(PacketType.ERROR, "Invalid packet type!")
+        except Exception as e:
+            self.log(f"Error while handling packet: {e}", 3)
+            return Packet(PacketType.ERROR, "Internal Server Error")
 
     def handle_client(self, conn: socket.socket):
         self.log("Started new thread for client.", level=1)
@@ -100,7 +133,7 @@ class Server:
                 if data.packet_type == PacketType.DISCONNECT:
                     break
 
-                reply = self.handle_packet(data)
+                reply = self.handle_packet(data, conn)
 
                 self.log(f"Send   : {reply}")
 
@@ -111,6 +144,7 @@ class Server:
 
         self.log(f"Closing connection to {conn.getsockname()}.")
         conn.close()
+        self.clients.remove(conn)
         self.server_info["online"] -= 1
 
     def get_ip(self):

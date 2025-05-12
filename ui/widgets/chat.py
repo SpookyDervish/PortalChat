@@ -42,14 +42,5 @@ class Chat(VerticalScroll):
     }
     """
     
-    def __init__(self, channel: Channel):
+    def __init__(self):
         super().__init__()
-        self.channel = channel
-
-    def on_mount(self):
-        for message in self.channel.messages:
-            self.mount(Message(
-                message.content,
-                message.sender.user_name,
-                message.send_time
-            ))
