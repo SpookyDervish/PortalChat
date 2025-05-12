@@ -30,6 +30,7 @@ def get_subnet():
     
     # We'll use 'eth0' for wired or 'wlan0' for Wi-Fi, you can adjust based on your system.
     for interface, addrs in interfaces.items():
+        print(interface)
         for addr in addrs:
             if addr.family == socket.AF_INET and not addr.address.startswith("127."):
                 local_ip = addr.address
@@ -57,6 +58,7 @@ def scan_ip(ip):
         sock.settimeout(TIMEOUT)
 
         # Attempt to connect to the given IP and port
+        print((str(ip), PORT))
         result = sock.connect_ex((str(ip), PORT))
 
         if result == 0:
