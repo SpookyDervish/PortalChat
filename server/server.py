@@ -189,4 +189,7 @@ class Server:
         elif level == 4:
             final_message = f"[bold][[bright_red]ERROR[/bright_red]][/bold]     {message}"
 
-        console.print(final_message, highlight=False)
+        try:
+            console.print(final_message, highlight=False)
+        except:
+            console.print(final_message, highlight=False, markup=False)

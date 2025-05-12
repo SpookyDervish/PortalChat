@@ -1,8 +1,8 @@
 from textual.containers import VerticalScroll, Vertical
-from textual.widgets import Label, Rule
+from textual.widgets import Label
+from rich.errors import MarkupError
 from datetime import datetime
 
-from api.channel import Channel
 from ui.widgets.image import Image
 
 
@@ -33,7 +33,9 @@ class Message(Vertical):
     def compose(self):
         yield Image(self.sender_icon_path, (4, 4), classes="user-icon")
         yield Label(f"[bold]@{self.user_name}[/bold] [dim]({self.send_time.strftime('%I:%M %p')})[/dim]", classes="user-name")
+
         yield Label(self.content, classes="msg-content")
+       
 
 class Chat(VerticalScroll):
     DEFAULT_CSS = """
