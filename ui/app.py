@@ -112,7 +112,7 @@ class Portal(App):
             self.notify(message="The host of the server shut down the server.", title="Woops!", severity="warning", timeout=10)
             self.open_server(None)
 
-    def open_server(self, server_info: tuple | None):
+    def open_server(self, server_info):
         if self.ping_loop_worker:
             self.ping_loop_worker.cancel()
             self.ping_loop_worker = None
