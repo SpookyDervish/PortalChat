@@ -101,7 +101,7 @@ class Portal(App):
 
         try:
             while self.is_open:
-                response = self.n.send(Packet(PacketType.WAIT))
+                response = self.n.send(Packet(PacketType.PING))
 
                 if response.packet_type == PacketType.MESSAGE_RECV and response.data["channel_id"] == self.channel_id:
                     self.mount_msg(chat, response.data)
