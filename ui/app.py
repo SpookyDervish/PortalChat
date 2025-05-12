@@ -112,7 +112,7 @@ class Portal(App):
                         packet.data["timestamp"],
                         packet.data["sender_name"]
                     )],
-                    "channel_name": packet.data["channel_name"]
+                    "channel_name": None
                 })
             elif packet.packet_type == PacketType.DATA:
                 if packet.data["type"] == "SERVER_CHANNELS":

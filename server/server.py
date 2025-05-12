@@ -87,7 +87,7 @@ class Server:
 
             user.send(pickle.dumps(Packet(
                 PacketType.MESSAGE_RECV,
-                {"message": message, "sender_name": sender_name, "timestamp": datetime.now(), "channel_id": channel_id}
+                {"message": message, "sender_name": sender_name, "timestamp": datetime.now(), "channel_id": channel_id, "channel_name": self.db.get_channel_name_by_id(channel_id)}
             )))
 
     def interactive_terminal(self):
