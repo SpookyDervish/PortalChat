@@ -80,9 +80,10 @@ class Portal(App):
         self.packet_queue.put(response)
 
     @work
-    async def mount_msgs(self, chat, data):
-        chat.mount(Label(f"[b][u]Welcome![/u][/b]\n[dim]This is the start of the #{data['channel_name']} channel.[/dim]\n[dim]Portal has only [bold]just started development[/bold], so watch out for bugs![/dim]"))
-        chat.mount(Rule(classes="start-rule"))
+    async def mount_msgs(self, chat, data, banner: bool = False):
+        if banner:
+            chat.mount(Label(f"[b][u]Welcome![/u][/b]\n[dim]This is the start of the #{data['channel_name']} channel.[/dim]\n[dim]Portal has only [bold]just started development[/bold], so watch out for bugs![/dim]"))
+            chat.mount(Rule(classes="start-rule"))
 
         for msg in data["messages"]:
             # the message id is message[0]
@@ -104,10 +105,15 @@ class Portal(App):
             packet = self.packet_queue.get()
             if packet.packet_type == PacketType.MESSAGE_RECV:
                 self.notify(str(packet), markup=False)
-                """self.mount_msgs(chat, {
-                    "messages": [packet.data],
-                    "channel_name": 
-                })"""
+                self.mount_msgs(chat, {
+                    "messages": [(
+                        None, # not needed atm
+                        packet.data["message"],
+                        packet.data["timestamp"],
+                        packet.data["sender_name"]
+                    )],
+                    "channel_name": packet.data["channel_name"]
+                })
             elif packet.packet_type == PacketType.DATA:
                 if packet.data["type"] == "SERVER_CHANNELS":
                     channel_list.clear()
@@ -123,7 +129,7 @@ class Portal(App):
                     chat.remove_children()
 
                     # add new messages
-                    self.mount_msgs(chat, data)
+                    self.mount_msgs(chat, data, banner=True)
             elif packet.packet_type == PacketType.PING:
                 pass # ignore ping packets
             elif packet.tag == "server-overview":
