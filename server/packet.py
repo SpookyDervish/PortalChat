@@ -19,3 +19,4 @@ class PacketType(Enum):
 class Packet:
     packet_type: PacketType
     data: Any = None
+    tag: str = None

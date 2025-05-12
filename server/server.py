@@ -97,40 +97,46 @@ class Server:
                 break
 
     def handle_packet(self, packet: Packet, conn: socket.socket):
+        reply = None
+
         try:
             if packet.packet_type == PacketType.WAIT:
-                return None
+                reply = None
             elif packet.packet_type == PacketType.PING:
-                return Packet(PacketType.PING, "HELLOOOo")
+                reply = Packet(PacketType.PING, "HELLOOOo")
             elif packet.packet_type == PacketType.GET:
                 if packet.data["type"] == "INFO":
-                    return Packet(PacketType.DATA, {"data": self.server_info, "type": "SERVER_INFO"})
+                    reply = Packet(PacketType.DATA, {"data": self.server_info, "type": "SERVER_INFO"})
                 elif packet.data["type"] == "CHANNELS": # TODO: create private channels
                     channels = self.db.get_channels_in_server(self.db.get_server_by_name(self.server_info["title"])[0])
-                    return Packet(PacketType.DATA, {"data": channels, "type": "SERVER_CHANNELS"})
+                    reply = Packet(PacketType.DATA, {"data": channels, "type": "SERVER_CHANNELS"})
                 elif packet.data["type"] == "MESSAGES": # TODO: don't let the user see message history of private channels
                     messages = self.db.get_messages_in_channel(packet.data["channel_id"])
-                    return Packet(PacketType.DATA, {"data": messages, "type": "SERVER_MSGS"})
+                    reply = Packet(PacketType.DATA, {"data": messages, "type": "SERVER_MSGS"})
                 else:
-                    return Packet(PacketType.ERROR, "Invalid GET type!")
+                    reply = Packet(PacketType.ERROR, "Invalid GET type!")
             elif packet.packet_type == PacketType.MESSAGE_SEND:
                 msg = packet.data["message"].strip()
 
                 if msg == "":
-                    return Packet(PacketType.ERROR, "Can't send an empty message.")
+                    reply = Packet(PacketType.ERROR, "Can't send an empty message.")
 
                 channel_id = packet.data["channel_id"] # TODO: check if the user has permission to send to that channel
                 
                 self.send_message(msg, channel_id, conn, "user")
-                return Packet(
+                reply = Packet(
                     PacketType.MESSAGE_RECV,
                     {"message": msg, "sender_name": "user", "timestamp": datetime.now(), "channel_id": channel_id}
                 )
             else:
-                return Packet(PacketType.ERROR, "Invalid packet type!")
+                reply = Packet(PacketType.ERROR, "Invalid packet type!")
         except Exception as e:
             self.log(f"Error while handling packet: {e}", 3)
-            return Packet(PacketType.ERROR, "Internal Server Error")
+            reply = Packet(PacketType.ERROR, "Internal Server Error")
+
+        if reply:
+            reply.tag = packet.tag
+        return reply
 
     def handle_client(self, conn: socket.socket):
         self.log("Started new thread for client.", level=1)
