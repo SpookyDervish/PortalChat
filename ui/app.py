@@ -7,6 +7,7 @@ from ui.widgets.sidebar import ServerList, ChannelList
 from ui.widgets.welcome import Welcome
 from ui.widgets.chat import Chat, Message
 from ui.widgets.message_box import ChatArea
+from ui.widgets.server_overview import ServerOverview
 
 from server.network import Network
 from server.packet import Packet, PacketType
@@ -39,9 +40,21 @@ class Portal(App):
         self.query_one(Chat).styles.display = "none"
         self.query_one(ChannelList).styles.display = "none"
 
-    def on_tree_node_highlighted(self, event: Tree.NodeHighlighted):
+    def on_tree_node_selected(self, event: Tree.NodeSelected):
         if self.n is None: return
         chat = self.query_one(Chat)
+
+        if event.node == event.node.tree.root:
+            server_info = self.n.send(Packet(PacketType.GET, {"type": "INFO"})).data
+            chat.display = "none"
+            self.mount(ServerOverview(server_info), after=self.query_one(ChannelList))
+        else:
+            chat.display = "block"
+            try:
+                overview = self.query_one(ServerOverview)
+                overview.remove()
+            except:
+                pass
 
         data = event.node.data
         self.channel_id = data
@@ -100,3 +113,5 @@ class Portal(App):
         channel_list.styles.display = "block"
         channel_list.root.set_label(server_info[0])
         welcome.styles.display = "none"
+
+        channel_list.select_node(channel_list.root)

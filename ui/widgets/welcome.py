@@ -69,7 +69,7 @@ $$/
 
     def compose(self):
         lines = self.TITLE.splitlines(keepends=True)
-        text = Text.assemble(*zip(lines, self.COLOURS))
+        text = Text.assemble(*zip(lines, self.COLOURS), style="bold")
 
         yield Static(text, classes="title")
         yield Rule()

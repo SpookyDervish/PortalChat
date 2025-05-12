@@ -14,13 +14,14 @@ console = Console()
 
 
 class Server:
-    def __init__(self, title: str, host: str = "", log_level: int = 1):
+    def __init__(self, title: str, description: str = "", host: str = "", log_level: int = 1):
         install(console=console)
         self.log_level = log_level
         self.BLOCKED_IPS = []
 
         self.server_info = {
             "title": title,
+            "description": description,
             "online": 0
         }
 
