@@ -3,6 +3,7 @@ from textual.widgets import Tree, Label, Rule
 from textual import work
 from datetime import datetime
 from time import sleep
+from queue import Queue
 
 from ui.widgets.sidebar import ServerList, ChannelList
 from ui.widgets.welcome import Welcome
@@ -44,6 +45,8 @@ class Portal(App):
         self.query_one(ChannelList).styles.display = "none"
         self.query_one(ChatArea).display = "none"
         self.ping_loop_worker = None
+        self.packet_handler_worker = None
+        self.packet_queue: Queue[Packet] = Queue()
 
     def on_tree_node_selected(self, event: Tree.NodeSelected):
         if self.n is None: return
@@ -83,9 +86,7 @@ class Portal(App):
     @work
     async def send_message(self, message: str):
         response = self.n.send(Packet(PacketType.MESSAGE_SEND, {"message": message, "channel_id": self.channel_id}))
-        chat = self.query_one(Chat)
-        
-        await chat.mount(Message(response.data["message"], response.data["sender_name"], response.data["timestamp"]))
+        self.packet_queue.put(response)
 
     @work
     async def mount_msg(self, chat, data):
@@ -96,17 +97,20 @@ class Portal(App):
         ))
 
     @work(thread=True)
-    def ping_loop(self):
+    def packet_handler(self):
         chat = self.query_one(Chat)
+        while True:
+            packet = self.packet_queue.get()
+            if packet.packet_type == PacketType.MESSAGE_RECV:
+                self.mount_msg(chat, packet.data)
+
+    @work(thread=True)
+    def ping_loop(self):
 
         try:
             while self.is_open:
                 response = self.n.send(Packet(PacketType.PING))
-
-                if response.packet_type == PacketType.MESSAGE_RECV and response.data["channel_id"] == self.channel_id:
-                    self.mount_msg(chat, response.data)
-
-                sleep(0.1)
+                self.packet_queue.put(response)
         except ConnectionResetError: # server was closed
             server_list = self.query_one(ServerList)
             for button in server_list.query_one("#icons").children:
@@ -121,6 +125,9 @@ class Portal(App):
         if self.ping_loop_worker:
             self.ping_loop_worker.cancel()
             self.ping_loop_worker = None
+        if self.packet_handler_worker:
+            self.packet_handler_worker.cancel()
+            self.packet_handler_worker = None
 
         chat = self.query_one(Chat)
         channel_list = self.query_one(ChannelList)
@@ -157,3 +164,4 @@ class Portal(App):
 
         channel_list.select_node(channel_list.root)
         self.ping_loop_worker = self.ping_loop()
+        self.packet_handler_worker = self.packet_handler()
