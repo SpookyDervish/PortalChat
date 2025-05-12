@@ -1,13 +1,11 @@
 from textual.app import App, ComposeResult
 
-from ui.widgets.sidebar import ServerList
+from ui.widgets.sidebar import ServerList, ChannelList
 from ui.widgets.welcome import Welcome
-from ui.widgets.chat import Chat, Message
+from ui.widgets.chat import Chat
 from ui.widgets.message_box import ChatArea
-from datetime import datetime
 
-from api.channel import Channel, ChannelMessage
-from api.user import User
+from api.channel import Channel
 
 
 channel = Channel("test-channel")
@@ -16,6 +14,7 @@ channel = Channel("test-channel")
 class Portal(App):
     def compose(self) -> ComposeResult:
         yield ServerList(id="sidebar")
+        yield ChannelList()
         yield Chat(channel)
         yield Welcome()
         yield ChatArea()

@@ -1,8 +1,22 @@
 from textual.containers import VerticalScroll, Vertical
+from textual.widgets import Tree
 from textual.widgets import Button, Rule
 
 from ui.widgets.add_server import AddServer
 
+
+class ChannelList(Tree):
+    DEFAULT_CSS = """
+    ChannelList {
+        dock: left;
+        max-width: 20;
+        width: 15;
+        margin-left: 10;
+    }
+    """
+
+    def __init__(self):
+        super().__init__("Channels", id="channels")
 
 class ServerList(Vertical):
     DEFAULT_CSS = """

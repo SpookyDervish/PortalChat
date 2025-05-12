@@ -1,6 +1,6 @@
-from ui.app import App
+from ui.app import Portal
 
 
 if __name__ == "__main__":
-    app = App()
+    app = Portal()
     app.run()
