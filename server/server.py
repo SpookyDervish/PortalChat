@@ -116,8 +116,6 @@ class Server:
                     messages = self.db.get_messages_in_channel(channel_id)
                     server = self.db.get_server_from_channel(channel_id)
 
-                    print(messages, server, channel_id, packet.data)
-
                     if messages == None and server == None:
                         reply = Packet(PacketType.ERROR, "Channel doesn't exist!")
                     else:
