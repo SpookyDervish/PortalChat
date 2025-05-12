@@ -73,26 +73,6 @@ class Database:
         );
         ''')
         self.commit()
-        
-        server_id = self.get_server_by_name("Testing Server")
-        if not server_id:
-            server_id = self.create_server("Testing Server")
-        else:
-            server_id = server_id[0]
-
-        user_id = self.get_user_by_name("@#%#^$$")
-        if user_id:
-            user_id = user_id[0]
-        else:
-            user_id = self.create_user("@#%#^$$")
-
-        channel_id = self.create_channel_in_server(server_id, "general") or self.get_channel_by_name(server_id, "general")[0]
-        self.create_message_in_channel(channel_id, user_id, "ḹḹ")
-        print(self.get_messages_in_channel(channel_id))
-
-        self.commit()
-
-        self.close()
 
     def commit(self):
         self.conn.commit()
