@@ -97,6 +97,7 @@ class Server:
             if packet.packet_type == PacketType.PING:
                 return Packet(PacketType.PING, "HELLOOOo")
             elif packet.packet_type == PacketType.GET:
+                print(packet.data["type"])
                 if packet.data["type"] == "INFO":
                     return Packet(PacketType.DATA, self.server_info)
                 elif packet.data["type"] == "CHANNELS":

@@ -78,11 +78,15 @@ class Database:
         server_id = self.get_server_by_name("Testing Server")
         if not server_id:
             server_id = self.create_server("Testing Server")
+        else:
+            server_id = server_id[0]
 
         if not self.get_user_by_name("user"):
             self.create_user("user")
-        if not self.get_channel_by_name(server_id, "general"):
-            self.create_channel_in_server(server_id, "general")
+
+        channel_id = self.get_channel_by_name(server_id, "general")
+        if not channel_id:
+            channel_id = self.create_channel_in_server(server_id, "general")
 
     def commit(self):
         self.conn.commit()

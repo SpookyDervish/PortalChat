@@ -59,7 +59,7 @@ def scan_ip(ip):
         if result == 0:
             # get info about the server
             sock.recv(2048) # throw the "connection received" message out
-            sock.send(pickle.dumps(Packet(PacketType.GET, "INFO")))
+            sock.send(pickle.dumps(Packet(PacketType.GET, {"type": "INFO"})))
             response = pickle.loads(sock.recv(2048))
 
             sock.send(pickle.dumps(Packet(PacketType.DISCONNECT,None)))
