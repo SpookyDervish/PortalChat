@@ -120,9 +120,13 @@ class Portal(App):
 
                     # add new messages
                     for message in data["messages"]:
-                        self.mount_msg(chat, {
+                        # the message id is message[0]
+                        # the message contents is message[1]
+                        # the timestamp (in string format) is message[2]
+                        # the sender name is message [3]
+                        self.mount_msg(chat, { 
                             "message": message[1],
-                            "sender_name": datetime.strptime(message[3], "%Y-%m-%d %H:%M:%S"),
+                            "sender_name": message[3],
                             "timestamp": message[2]
                         })
             elif packet.packet_type == PacketType.PING:

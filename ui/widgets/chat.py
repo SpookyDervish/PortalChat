@@ -30,7 +30,11 @@ class Message(Vertical):
         super().__init__()
         self.content = content
         self.user_name = user_name
+
         self.send_time = send_time
+        if isinstance(self.send_time, str): # auto convert string time into datetime
+            self.send_time = datetime.strptime(self.send_time, "%Y-%m-%d %H:%M:%S")
+
         self.sender_icon_path = sender_icon_path
 
     def compose(self):
