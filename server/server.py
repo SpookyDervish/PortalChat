@@ -112,6 +112,10 @@ class Server:
                     return Packet(PacketType.ERROR, "Invalid GET type!")
             elif packet.packet_type == PacketType.MESSAGE_SEND:
                 msg = packet.data["message"].strip()
+
+                if msg == "":
+                    return Packet(PacketType.ERROR, "Can't send an empty message.")
+
                 channel_id = packet.data["channel_id"] # TODO: check if the user has permission to send to that channel
                 
                 self.send_message(msg, channel_id, conn, "user")

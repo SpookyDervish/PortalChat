@@ -2,6 +2,7 @@ from textual.app import App, ComposeResult
 from textual.widgets import Tree, Label, Rule
 from textual import work
 from datetime import datetime
+from time import sleep
 
 from ui.widgets.sidebar import ServerList, ChannelList
 from ui.widgets.welcome import Welcome
@@ -29,17 +30,20 @@ class Portal(App):
         yield ChatArea()
 
     def action_quit(self):
+        self.is_open = False
         if self.n:
             self.n.client.close()
         return super().action_quit()
 
     def on_mount(self):
+        self.is_open = True
         self.n = None
         self.channel_id = None
         self.opened_server = None
         self.query_one(Chat).styles.display = "none"
         self.query_one(ChannelList).styles.display = "none"
         self.query_one(ChatArea).display = "none"
+        self.ping_loop_worker = None
 
     def on_tree_node_selected(self, event: Tree.NodeSelected):
         if self.n is None: return
@@ -87,17 +91,25 @@ class Portal(App):
     def ping_loop(self):
         chat = self.query_one(Chat)
 
-        while True:
-            response = self.n.send(Packet(PacketType.PING))
+        try:
+            while self.is_open:
+                response = self.n.send(Packet(PacketType.PING))
 
-            if response.packet_type == PacketType.MESSAGE_RECV and response.data["channel_id"] == self.channel_id:
-                chat.mount(Message(
-                    response.data["message"],
-                    response.data["sender_name"],
-                    response.data["timestamp"]
-                ))
+                if response.packet_type == PacketType.MESSAGE_RECV and response.data["channel_id"] == self.channel_id:
+                    chat.mount(Message(
+                        response.data["message"],
+                        response.data["sender_name"],
+                        response.data["timestamp"]
+                    ))
+                sleep(1)
+        except ConnectionResetError: # server was closed
+            pass
 
     def open_server(self, server_info):
+        if self.ping_loop_worker:
+            self.ping_loop_worker.cancel()
+            self.ping_loop_worker = None
+
         chat = self.query_one(Chat)
         channel_list = self.query_one(ChannelList)
         welcome = self.query_one(Welcome)
@@ -119,3 +131,4 @@ class Portal(App):
         welcome.styles.display = "none"
 
         channel_list.select_node(channel_list.root)
+        self.ping_loop_worker = self.ping_loop()

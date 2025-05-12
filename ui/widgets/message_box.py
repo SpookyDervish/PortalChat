@@ -15,6 +15,10 @@ class ChatArea(Container):
     @on(Input.Submitted)
     def send_message(self, event: Input.Submitted):
         text = event.value.strip()
+
+        if text == "":
+            return
+
         self.query_one(Input).clear()
         self.app.send_message(text)
     

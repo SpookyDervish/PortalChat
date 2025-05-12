@@ -1,7 +1,6 @@
 from textual.containers import VerticalScroll, Vertical
 from textual.widgets import Label
 
-from rich.text import Text
 from textual.markup import MarkupError
 from datetime import datetime
 
@@ -15,12 +14,14 @@ class Message(Vertical):
         max-height: 3;
         height: 2;
         margin-bottom: 1;
-    }
 
-    Message .user-icon {
-        dock: left;   
-        width: 4;
-        margin-right: 1;
+        .user-icon {
+            dock: left;   
+            width: 4;
+            margin-right: 1;
+        }
+
+        
     }
     """
     
@@ -34,12 +35,13 @@ class Message(Vertical):
 
     def compose(self):
         yield Image(self.sender_icon_path, (4, 4), classes="user-icon")
-        label = Label(f"[bold]@{self.user_name}[/bold] [dim]({self.send_time.strftime('%I:%M %p')})[/dim]", classes="user-name")
-        
+        yield Label(f"[bold]@{self.user_name}[/bold] [dim]({self.send_time.strftime('%I:%M %p')})[/dim]", classes="user-name")
+        label = Label(self.content, classes="msg-content")
+
         try:
             label.visual
         except MarkupError:
-            label = Label(Text(self.content), classes="msg-content", markup=False)
+            label = Label(self.content, classes="msg-content", markup=False)
         yield label
        
 
