@@ -82,13 +82,17 @@ class Server:
         self.log("Saving DB...")
         self.db.commit()
 
+        packet = Packet(
+                PacketType.MESSAGE_RECV,
+                {"message": message, "sender_name": sender_name, "timestamp": datetime.now(), "channel_id": channel_id, "channel_name": self.db.get_channel_name_by_id(channel_id)}
+            )
+
         for user in self.clients:
             if user == sender_conn: continue
 
-            user.send(pickle.dumps(Packet(
-                PacketType.MESSAGE_RECV,
-                {"message": message, "sender_name": sender_name, "timestamp": datetime.now(), "channel_id": channel_id, "channel_name": self.db.get_channel_name_by_id(channel_id)}
-            )))
+            self.log(f"Sending packet to {user}: {packet}", 1)
+
+            user.send(pickle.dumps(packet))
 
     def interactive_terminal(self):
         while True:
