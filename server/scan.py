@@ -11,7 +11,7 @@ except ModuleNotFoundError:
 # The port to scan for
 PORT = 5445
 # Timeout for the connection attempt
-TIMEOUT = 0.5
+TIMEOUT = 1
 # Number of threads to limit the max parallel scans
 MAX_THREADS = 100
 
