@@ -78,6 +78,7 @@ class Portal(App):
     async def send_message(self, message: str):
         response = self.n.send(Packet(PacketType.MESSAGE_SEND, {"message": message, "channel_id": self.channel_id}))
         self.packet_queue.put(response)
+        self.notify(f"send msg response: {response}", markup=False)
 
     @work
     async def mount_msgs(self, chat, data, banner: bool = False):
@@ -145,6 +146,7 @@ class Portal(App):
             while self.is_open:
                 response = self.n.send(Packet(PacketType.PING))
                 self.packet_queue.put(response)
+                self.notify(f"ping response: {response}", markup=False)
                 sleep(0.5)
         except (ConnectionResetError, EOFError): # server was closed
             server_list = self.query_one(ServerList)
