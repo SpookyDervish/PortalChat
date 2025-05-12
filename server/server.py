@@ -118,7 +118,7 @@ class Server:
 
                     print(messages, server)
 
-                    if messages == None or server == None:
+                    if messages == None and server == None:
                         reply = Packet(PacketType.ERROR, "Channel doesn't exist!")
                     else:
                         reply = Packet(PacketType.DATA, {"data": {"messages": messages, "channel_name": server[1]}, "type": "SERVER_MSGS"})
