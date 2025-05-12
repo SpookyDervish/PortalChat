@@ -77,6 +77,7 @@ class Server:
             message (str): The string contents of the message
             sender_name (str, optional): What is the name of the user who sent the message? Defaults to a system message with no sender.
         """
+        self.log(f"@{sender_name} said {message} in channel ID {channel_id}.")
         self.db.create_message_in_channel(channel_id, self.db.get_user_by_name(sender_name)[0], message)
         self.db.commit()
 
