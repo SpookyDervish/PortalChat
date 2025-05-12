@@ -103,9 +103,16 @@ class Portal(App):
                     ))
                 sleep(1)
         except ConnectionResetError: # server was closed
-            pass
+            server_list = self.query_one(ServerList)
+            for button in server_list.query_one("#icons").children:
+                if "server-btn" in button.classes:
+                    if button.info[2] == self.n.client.getpeername()[0]: # if the button refers to the server that just closed, then delete the button
+                        button.remove()
 
-    def open_server(self, server_info):
+            self.notify(message="The host of the server shut down the server.", title="Woops!", severity="warning", timeout=10)
+            self.open_server(None)
+
+    def open_server(self, server_info: tuple | None):
         if self.ping_loop_worker:
             self.ping_loop_worker.cancel()
             self.ping_loop_worker = None
@@ -113,6 +120,19 @@ class Portal(App):
         chat = self.query_one(Chat)
         channel_list = self.query_one(ChannelList)
         welcome = self.query_one(Welcome)
+
+        if server_info == None: # go back to welcome screen
+            welcome.display = "block"
+            chat.display = "none"
+            channel_list.display = "none"
+
+            try:
+                overview = self.query_one(ServerOverview)
+                overview.remove()
+            except:
+                pass
+
+            return
 
         self.n = Network(server_info[2]) # start a connection to the server
         channels = self.n.send(Packet(PacketType.GET, {"type": "CHANNELS"})).data
