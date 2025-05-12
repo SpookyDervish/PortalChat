@@ -101,7 +101,7 @@ class Portal(App):
         chat = self.query_one(Chat)
         channel_list = self.query_one(ChannelList)
 
-        while True:
+        while self.is_open:
             packet = self.packet_queue.get()
             if packet.packet_type == PacketType.MESSAGE_RECV:
                 self.mount_msg(chat, packet.data)
