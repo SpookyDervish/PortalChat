@@ -119,6 +119,8 @@ class Portal(App):
                 # add new messages
                 for message in data["messages"]:
                     chat.mount(Message(message[1], message[3], datetime.strptime(message[2], "%Y-%m-%d %H:%M:%S")))
+            else:
+                self.notify(f"Unhandled packet: {packet}", title="Warning!", severity="warning")
 
     @work(thread=True)
     def ping_loop(self):
