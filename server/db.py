@@ -36,51 +36,54 @@ class Database:
             FOREIGN KEY (server_id) REFERENCES servers(server_id) ON DELETE CASCADE
         );
         ''')
+        self.commit()
 
-        self.cur.execute("INSERT INTO servers (name) VALUES (?)", ("MyServer1",))
-        server1_id = self.cur.lastrowid
-        self.cur.execute("INSERT INTO servers (name) VALUES (?)", ("MyServer2",))
-        server2_id = self.cur.lastrowid
-        
-        self.cur.execute("INSERT INTO users (username) VALUES (?)", ("Alice",))
-        alice_id = self.cur.lastrowid
-        self.cur.execute("INSERT INTO users (username) VALUES (?)", ("Bob",))
-        bob_id = self.cur.lastrowid
+        server_id = self.create_server("Testing Server")
+        user_id = self.create_user("SpookyDervish")
 
-        print(server1_id, server2_id)
-        print(alice_id, bob_id)
+        self.add_user_to_server(user_id, server_id)
 
-        # Add users to servers via memberships
+    def commit(self):
+        self.conn.commit()
+
+    def close(self):
+        self.conn.close()
+
+    def create_server(self, server_name: str):
+        self.cur.execute("INSERT INTO servers (name) VALUES (?)", (server_name,))
+        server_id = self.cur.lastrowid
+        return server_id
+    
+    def create_user(self, user_name: str):
+        self.cur.execute("INSERT INTO users (username) VALUES (?)", (user_name,))
+        user_id = self.cur.lastrowid
+        return user_id
+    
+    def add_user_to_server(self, user_id: int, server_id: int):
         memberships = [
-            (alice_id, server1_id),
-            (alice_id, server2_id),
-            (bob_id, server1_id),
+            (user_id, server_id)
         ]
         self.cur.executemany("INSERT INTO memberships (user_id, server_id) VALUES (?, ?)", memberships)
 
-        self.conn.commit()
-
-        # Query: All users in MyServer1
+    def users_in_server(self, server_name: str):
         self.cur.execute("""
         SELECT u.username
         FROM users u
         JOIN memberships m ON u.user_id = m.user_id
         JOIN servers s ON m.server_id = s.server_id
         WHERE s.name = ?
-        """, ("MyServer1",))
-        print("Users in MyServer1:", [row[0] for row in self.cur.fetchall()])
-
-        # Query: All servers Alice is in
+        """, (server_name,))
+        return [row[0] for row in self.cur.fetchall()]
+    
+    def servers_with_user(self, user_name: str):
         self.cur.execute("""
         SELECT s.name
         FROM servers s
         JOIN memberships m ON s.server_id = m.server_id
         JOIN users u ON m.user_id = u.user_id
         WHERE u.username = ?
-        """, ("Alice",))
-        print("Servers Alice is in:", [row[0] for row in self.cur.fetchall()])
-
-        self.conn.close()
+        """, (user_name,))
+        return [row[0] for row in self.cur.fetchall()]
 
 
 if __name__ == "__main__":
