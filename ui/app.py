@@ -39,17 +39,21 @@ class Portal(App):
         self.opened_server = None
         self.query_one(Chat).styles.display = "none"
         self.query_one(ChannelList).styles.display = "none"
+        self.query_one(ChatArea).display = "none"
 
     def on_tree_node_selected(self, event: Tree.NodeSelected):
         if self.n is None: return
         chat = self.query_one(Chat)
+        chat_area = self.query_one(ChatArea)
 
         if event.node == event.node.tree.root:
             server_info = self.n.send(Packet(PacketType.GET, {"type": "INFO"})).data
             chat.display = "none"
+            chat_area.display = 'none'
             self.mount(ServerOverview(server_info), after=self.query_one(ChannelList))
         else:
             chat.display = "block"
+            chat_area.display = 'block'
             try:
                 overview = self.query_one(ServerOverview)
                 overview.remove()
