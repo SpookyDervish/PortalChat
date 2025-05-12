@@ -59,9 +59,7 @@ def scan_ip(ip):
         # Attempt to connect to the given IP and port
         result = sock.connect_ex((str(ip), PORT))
 
-        print(result)
         if result == 0:
-            print("detected! getting info...")
             # get info about the server
             sock.recv(2048) # throw the "connection received" message out
             sock.send(pickle.dumps(Packet(PacketType.GET, {"type": "INFO"})))
@@ -89,7 +87,6 @@ def scan_network(network):
         # Process results as they are completed
         for future in concurrent.futures.as_completed(futures):
             ip = futures[future]
-            print("Scanning " + str(ip) + ": ", end='')
             try:
                 result = future.result()
                 if result:

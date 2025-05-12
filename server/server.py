@@ -41,6 +41,7 @@ class Server:
         except socket.error as e:
             self.log(f"Failed to bind socket! {e}", level=4)
             sys.exit(1)
+        self.log(f"Server bound to: {self.sock.getsockname()}", 1)
 
         self.sock.listen()
         self.log("Server is listening and ready to receive connections!")
