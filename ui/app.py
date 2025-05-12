@@ -86,6 +86,10 @@ class Portal(App):
             data["timestamp"]
         ))
 
+    @work
+    async def chat_mount(self, chat, widget):
+        chat.mount(widget)
+
     @work(thread=True)
     def packet_handler(self):
         chat = self.query_one(Chat)
@@ -93,6 +97,7 @@ class Portal(App):
 
         while self.is_open:
             packet = self.packet_queue.get()
+            print(packet)
             if packet.packet_type == PacketType.MESSAGE_RECV:
                 self.mount_msg(chat, packet.data)
             elif packet.packet_type == PacketType.DATA:
@@ -104,27 +109,27 @@ class Portal(App):
 
                         channel_list.root.add_leaf(channel_name, data=channel_id)
                     channel_list.root.expand_all()
+                elif packet.data["type"] == "SERVER_MSGS":
+                    data = packet.data["data"]
+                    # delete other messages
+                    chat.remove_children()
+
+                    # show starting message
+                    self.chat_mount(chat, Label(f"[b][u]Welcome![/u][/b]\n[dim]This is the start of the #{data['channel_name']} channel.[/dim]\n[dim]Portal has only [bold]just started development[/bold], so watch out for bugs![/dim]"))
+                    self.chat_mount(chat, Rule(classes="start-rule"))
+
+                    # add new messages
+                    for message in data["messages"]:
+                        self.mount_msg(chat, {
+                            "message": message[1],
+                            "sender_name": datetime.strptime(message[3], "%Y-%m-%d %H:%M:%S"),
+                            "timestamp": message[2]
+                        })
             elif packet.packet_type == PacketType.PING:
                 pass # ignore ping packets
             elif packet.tag == "server-overview":
                 server_info = packet.data["data"]
                 self.mount(ServerOverview(server_info["data"]), after=self.query_one(ChannelList))
-            elif packet.tag == "servr-msgs":
-                data = packet.data["data"]
-                # delete other messages
-                chat.remove_children()
-
-                # show starting message
-                chat.mount(Label(f"[b][u]Welcome![/u][/b]\n[dim]This is the start of the #{data['channel_name']} channel.[/dim]\n[dim]Portal has only [bold]just started development[/bold], so watch out for bugs![/dim]"))
-                chat.mount(Rule(classes="start-rule"))
-
-                # add new messages
-                for message in data["messages"]:
-                    self.mount_msg(chat, {
-                        "message": message[1],
-                        "sender_name": message[3],
-                        "timestamp": message[2]
-                    })
             else:
                 self.notify(f"Unhandled packet: {packet}", title="Warning!", severity="warning")
 
