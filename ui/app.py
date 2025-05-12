@@ -27,6 +27,11 @@ class Portal(App):
         yield Welcome()
         yield ChatArea()
 
+    def action_quit(self):
+        if self.n:
+            self.n.client.close()
+        return super().action_quit()
+
     def on_mount(self):
         self.n = None
         self.channel_id = None
