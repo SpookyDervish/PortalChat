@@ -60,6 +60,7 @@ def scan_ip(ip):
         result = sock.connect_ex((str(ip), PORT))
     
         if result == 0:
+            print("detected! getting info...")
             # get info about the server
             sock.recv(2048) # throw the "connection received" message out
             sock.send(pickle.dumps(Packet(PacketType.GET, {"type": "INFO"})))
