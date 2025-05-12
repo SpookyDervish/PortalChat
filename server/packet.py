@@ -17,4 +17,4 @@ class PacketType(Enum):
 @dataclass
 class Packet:
     packet_type: PacketType
-    data: Any
+    data: Any = None

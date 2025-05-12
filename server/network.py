@@ -13,10 +13,10 @@ class Network:
     def get_client(self):
         return self.user
 
-    def connect(self):
+    def connect(self) -> Packet:
         self.client.connect(self.addr)
         return pickle.loads(self.client.recv(2048))
         
-    def send(self, data):
+    def send(self, data) -> Packet:
         self.client.send(pickle.dumps(data))
         return pickle.loads(self.client.recv(2048))

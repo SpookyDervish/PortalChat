@@ -1,5 +1,6 @@
 from textual.app import App, ComposeResult
 from textual.widgets import Tree
+from textual import work
 from datetime import datetime
 
 from ui.widgets.sidebar import ServerList, ChannelList
@@ -21,6 +22,7 @@ class Portal(App):
 
     def on_mount(self):
         self.n = None
+        self.channel_id = None
         self.opened_server = None
         self.query_one(Chat).styles.display = "none"
         self.query_one(ChannelList).styles.display = "none"
@@ -30,12 +32,34 @@ class Portal(App):
         chat = self.query_one(Chat)
 
         data = event.node.data
+        self.channel_id = data
 
-        messages = self.n.send(Packet(PacketType.GET, {"type": "MESSAGES", "channel_id": data})).data
+        messages = self.n.send(Packet(PacketType.GET, {"type": "MESSAGES", "channel_id": self.channel_id})).data
         
         chat.remove_children()
         for message in messages:
             chat.mount(Message(message[1], message[3], datetime.strptime(message[2], "%Y-%m-%d %H:%M:%S")))
+
+    @work
+    async def send_message(self, message: str):
+        response = self.n.send(Packet(PacketType.MESSAGE_SEND, {"message": message, "channel_id": self.channel_id}))
+        chat = self.query_one(Chat)
+        
+        await chat.mount(Message(response.data["message"], response.data["sender_name"], response.data["timestamp"]))
+
+    @work(thread=True)
+    def ping_loop(self):
+        chat = self.query_one(Chat)
+
+        while True:
+            response = self.n.send(Packet(PacketType.PING))
+
+            if response.packet_type == PacketType.MESSAGE_RECV and response.data["channel_id"] == self.channel_id:
+                chat.mount(Message(
+                    response.data["message"],
+                    response.data["sender_name"],
+                    response.data["timestamp"]
+                ))
 
     def open_server(self, server_info):
         chat = self.query_one(Chat)

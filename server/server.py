@@ -68,20 +68,22 @@ class Server:
             self.log(f"New connection! Address: {addr}")
             start_new_thread(self.handle_client, tuple([conn]))
 
-    def send_message(self, message: str, channel_id: int, sender_name: str = None):
+    def send_message(self, message: str, channel_id: int, sender_conn: socket.socket = None, sender_name: str = None):
         """Send a message to all users and save the message to the DB.
 
         Args:
             message (str): The string contents of the message
             sender_name (str, optional): What is the name of the user who sent the message? Defaults to a system message with no sender.
         """
+        self.db.create_message_in_channel(channel_id, self.db.get_user_by_name(sender_name)[0], message)
+        self.db.commit()
+
         for user in self.clients:
-            self.db.create_message_in_channel(channel_id, self.db.get_user_by_name(sender_name)[0], message)
-            self.db.commit()
+            if user == sender_conn: continue
 
             user.send(pickle.dumps(Packet(
                 PacketType.MESSAGE_RECV,
-                {"message": message, "sender_name": sender_name, "timestamp": datetime.now()}
+                {"message": message, "sender_name": sender_name, "timestamp": datetime.now(), "channel_id": channel_id}
             )))
 
     def interactive_terminal(self):
@@ -97,22 +99,25 @@ class Server:
             if packet.packet_type == PacketType.PING:
                 return Packet(PacketType.PING, "HELLOOOo")
             elif packet.packet_type == PacketType.GET:
-                print(packet.data["type"])
                 if packet.data["type"] == "INFO":
                     return Packet(PacketType.DATA, self.server_info)
-                elif packet.data["type"] == "CHANNELS":
+                elif packet.data["type"] == "CHANNELS": # TODO: create private channels
                     channels = self.db.get_channels_in_server(self.db.get_server_by_name(self.server_info["title"])[0])
                     return Packet(PacketType.DATA, channels)
-                elif packet.data["type"] == "MESSAGES":
+                elif packet.data["type"] == "MESSAGES": # TODO: don't let the user see message history of private channels
                     messages = self.db.get_messages_in_channel(packet.data["channel_id"])
                     return Packet(PacketType.DATA, messages)
                 else:
                     return Packet(PacketType.ERROR, "Invalid GET type!")
             elif packet.packet_type == PacketType.MESSAGE_SEND:
                 msg = packet.data["message"].strip()
-                channel_id = packet.data["channel_id"]
+                channel_id = packet.data["channel_id"] # TODO: check if the user has permission to send to that channel
                 
-                self.send_message(msg, channel_id, "user")
+                self.send_message(msg, channel_id, conn, "user")
+                return Packet(
+                    PacketType.MESSAGE_RECV,
+                    {"message": msg, "sender_name": "user", "timestamp": datetime.now(), "channel_id": channel_id}
+                )
             else:
                 return Packet(PacketType.ERROR, "Invalid packet type!")
         except Exception as e:
