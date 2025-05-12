@@ -9,8 +9,7 @@ class ChannelList(Tree):
     DEFAULT_CSS = """
     ChannelList {
         dock: left;
-        max-width: 20;
-        width: 15;
+        max-width: 25;
         margin-left: 10;
     }
     """

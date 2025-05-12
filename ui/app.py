@@ -22,10 +22,14 @@ class Portal(App):
     def on_mount(self):
         self.opened_server = None
         self.query_one(Chat).styles.display = "none"
+        self.query_one(ChannelList).styles.display = "none"
 
     def open_server(self, server_info):
         chat = self.query_one(Chat)
+        channel_list = self.query_one(ChannelList)
         welcome = self.query_one(Welcome)
 
         chat.styles.display = "block"
+        channel_list.styles.display = "block"
+        channel_list.root.set_label(server_info[0])
         welcome.styles.display = "none"

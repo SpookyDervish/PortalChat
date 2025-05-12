@@ -234,7 +234,3 @@ class Database:
         WHERE u.username = ?
         """, (user_name,))
         return [row[0] for row in self.cur.fetchall()]
-
-
-if __name__ == "__main__":
-    db = Database()

@@ -5,7 +5,8 @@ from _thread import start_new_thread
 
 from rich.traceback import install
 from rich.console import Console
-from server.packet import Packet, PacketType # TODO: may need to be replaced with "server.packet" in the future
+from server.packet import Packet, PacketType
+from server.db import Database
 
 
 console = Console()
@@ -26,6 +27,9 @@ class Server:
         self.clients = []
         self.host = host
         self.port = 5445
+
+        self.log("Getting database...")
+        self.db = Database()
 
         self.log("Creating socket...", 1)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
