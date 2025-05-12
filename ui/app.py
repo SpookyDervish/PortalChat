@@ -87,8 +87,8 @@ class Portal(App):
         
         await chat.mount(Message(response.data["message"], response.data["sender_name"], response.data["timestamp"]))
 
-    @work
-    async def ping_loop(self):
+    @work(thread=True)
+    def ping_loop(self):
         chat = self.query_one(Chat)
 
         try:
