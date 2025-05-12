@@ -54,10 +54,9 @@ class Portal(App):
         chat_area = self.query_one(ChatArea)
 
         if event.node == event.node.tree.root:
-            server_info = self.n.send(Packet(PacketType.GET, {"type": "INFO"})).data
+            self.packet_queue.put(self.n.send(Packet(PacketType.GET, {"type": "INFO"}, tag="server-overview")).data)
             chat.display = "none"
             chat_area.display = 'none'
-            self.mount(ServerOverview(server_info["data"]), after=self.query_one(ChannelList))
         else:
             chat.display = "block"
             chat_area.display = 'block'
@@ -114,6 +113,9 @@ class Portal(App):
 
                         channel_list.root.add_leaf(channel_name, data=channel_id)
                     channel_list.root.expand_all()
+            elif packet.tag == "server-overview":
+                server_info = packet.data["data"]
+                self.mount(ServerOverview(server_info["data"]), after=self.query_one(ChannelList))
 
     @work(thread=True)
     def ping_loop(self):
