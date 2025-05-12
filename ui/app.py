@@ -4,6 +4,7 @@ from textual import work
 from datetime import datetime
 from time import sleep
 from queue import Queue
+import asyncio
 
 from ui.widgets.sidebar import ServerList, ChannelList
 from ui.widgets.welcome import Welcome
@@ -114,8 +115,8 @@ class Portal(App):
                     chat.remove_children()
 
                     # show starting message
-                    self.chat_mount(chat, Label(f"[b][u]Welcome![/u][/b]\n[dim]This is the start of the #{data['channel_name']} channel.[/dim]\n[dim]Portal has only [bold]just started development[/bold], so watch out for bugs![/dim]"))
-                    self.chat_mount(chat, Rule(classes="start-rule"))
+                    #self.chat_mount(chat, Label(f"[b][u]Welcome![/u][/b]\n[dim]This is the start of the #{data['channel_name']} channel.[/dim]\n[dim]Portal has only [bold]just started development[/bold], so watch out for bugs![/dim]"))
+                    #self.chat_mount(chat, Rule(classes="start-rule"))
 
                     # add new messages
                     for message in data["messages"]:
