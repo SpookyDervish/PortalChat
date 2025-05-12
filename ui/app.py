@@ -14,7 +14,7 @@ from server.packet import Packet, PacketType
 
 class Portal(App):
     DEFAULT_CSS = """
-    #start-rule {
+    .start-rule {
         color: $background-lighten-1;
     }
     """
@@ -53,7 +53,7 @@ class Portal(App):
 
         # show starting message
         chat.mount(Label(f"[b][u]Welcome![/u][/b]\n[dim]This is the start of the #{event.node.label} channel.[/dim]\n[dim]Portal has only [bold]just started development[/bold], so watch out for bugs![/dim]"))
-        chat.mount(Rule(id="start-rule"))
+        chat.mount(Rule(classes="start-rule"))
 
         # add new messages
         for message in messages:
