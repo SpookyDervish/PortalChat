@@ -38,16 +38,6 @@ class Database:
         ''')
         self.commit()
 
-        server_id = self.create_server("Testing Server")
-        server2_id = self.create_server("Testing Server 2")
-        user_id = self.create_user("SpookyDervish")
-
-        self.add_user_to_server(user_id, server_id)
-
-        print(self.users_in_server("Testing Server"))
-        print(self.is_user_in_server(user_id, server_id))
-        print(self.is_user_in_server(user_id, server2_id))
-
         self.close()
 
     def commit(self):
