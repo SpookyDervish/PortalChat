@@ -62,6 +62,10 @@ class AddServer(ModalScreen):
         for server in scan_network(get_subnet_network(local_ip, netmash)):
             table.add_row(server["title"], server["online"], server["ip"])
 
+        # remove loading text when done searching for servers
+        self.query_one("#loading1").remove()
+        self.query_one("#loading2").remove()
+
     @on(DataTable.RowHighlighted)
     def select_server(self, event: DataTable.RowHighlighted):
         join_server_btn = self.query_one("#join-serv")
