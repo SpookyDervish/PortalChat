@@ -88,7 +88,7 @@ class Portal(App):
 
     @work
     async def chat_mount(self, chat, widget):
-        chat.mount(widget)
+        await chat.mount(widget)
 
     @work(thread=True)
     def packet_handler(self):
@@ -97,7 +97,6 @@ class Portal(App):
 
         while self.is_open:
             packet = self.packet_queue.get()
-            print(packet)
             if packet.packet_type == PacketType.MESSAGE_RECV:
                 self.mount_msg(chat, packet.data)
             elif packet.packet_type == PacketType.DATA:
