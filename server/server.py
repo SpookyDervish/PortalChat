@@ -105,7 +105,7 @@ class Server:
             if packet.packet_type == PacketType.WAIT:
                 reply = None
             elif packet.packet_type == PacketType.PING:
-                reply = Packet(PacketType.PING, "HELLOOOo")
+                reply = Packet(PacketType.PING)
             elif packet.packet_type == PacketType.GET:
                 if packet.data["type"] == "INFO":
                     reply = Packet(PacketType.DATA, {"data": self.server_info, "type": "SERVER_INFO"})

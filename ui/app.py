@@ -1,10 +1,7 @@
 from textual.app import App, ComposeResult
 from textual.widgets import Tree, Label, Rule
 from textual import work
-from datetime import datetime
-from time import sleep
 from queue import Queue
-import asyncio
 
 from ui.widgets.sidebar import ServerList, ChannelList
 from ui.widgets.welcome import Welcome
@@ -104,7 +101,6 @@ class Portal(App):
         while self.is_open:
             packet = self.packet_queue.get()
             if packet.packet_type == PacketType.MESSAGE_RECV:
-                self.notify(str(packet), markup=False)
                 self.mount_msgs(chat, {
                     "messages": [(
                         None, # not needed atm
@@ -145,7 +141,6 @@ class Portal(App):
             while self.is_open:
                 response = self.n.send(Packet(PacketType.PING))
                 self.packet_queue.put(response)
-                sleep(0.5)
         except Exception: # server was closed
             server_list = self.query_one(ServerList)
             for button in server_list.query_one("#icons").children:
