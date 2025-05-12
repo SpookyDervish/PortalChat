@@ -3,7 +3,10 @@ import psutil
 import pickle
 import ipaddress
 import concurrent.futures
-from server.packet import Packet, PacketType
+try:
+    from server.packet import Packet, PacketType
+except ModuleNotFoundError:
+    from packet import Packet, PacketType
 
 # The port to scan for
 PORT = 5445
