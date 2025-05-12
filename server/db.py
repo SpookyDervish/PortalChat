@@ -94,6 +94,15 @@ class Database:
     def close(self):
         self.conn.close()
 
+    def get_channel_name_by_id(self, channel_id: int):
+        self.cur.execute("""
+            SELECT name FROM channels
+            WHERE channel_id = ?
+            LIMIT 1
+        """, (channel_id,))
+        result = self.cur.fetchone()
+        return result[0] if result else None
+
     def get_server_from_channel(self, channel_id: int):
         self.cur.execute("""
             SELECT s.*

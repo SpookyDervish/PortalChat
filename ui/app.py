@@ -80,16 +80,20 @@ class Portal(App):
         self.packet_queue.put(response)
 
     @work
-    async def mount_msg(self, chat, data):
-        chat.mount(Message(
-            data["message"],
-            data["sender_name"],
-            data["timestamp"]
-        ))
+    async def mount_msgs(self, chat, data):
+        chat.mount(Label(f"[b][u]Welcome![/u][/b]\n[dim]This is the start of the #{data['channel_name']} channel.[/dim]\n[dim]Portal has only [bold]just started development[/bold], so watch out for bugs![/dim]"))
+        chat.mount(Rule(classes="start-rule"))
 
-    @work
-    async def chat_mount(self, chat, widget):
-        await chat.mount(widget)
+        for msg in data["messages"]:
+            # the message id is message[0]
+            # the message contents is message[1]
+            # the timestamp (in string format) is message[2]
+            # the sender name is message [3]
+            chat.mount(Message(
+                msg[1],
+                msg[3],
+                msg[2]
+            ))
 
     @work(thread=True)
     def packet_handler(self):
@@ -99,7 +103,11 @@ class Portal(App):
         while self.is_open:
             packet = self.packet_queue.get()
             if packet.packet_type == PacketType.MESSAGE_RECV:
-                self.mount_msg(chat, packet.data)
+                self.notify(str(packet), markup=False)
+                """self.mount_msgs(chat, {
+                    "messages": [packet.data],
+                    "channel_name": 
+                })"""
             elif packet.packet_type == PacketType.DATA:
                 if packet.data["type"] == "SERVER_CHANNELS":
                     channel_list.clear()
@@ -114,21 +122,8 @@ class Portal(App):
                     # delete other messages
                     chat.remove_children()
 
-                    # show starting message
-                    #self.chat_mount(chat, Label(f"[b][u]Welcome![/u][/b]\n[dim]This is the start of the #{data['channel_name']} channel.[/dim]\n[dim]Portal has only [bold]just started development[/bold], so watch out for bugs![/dim]"))
-                    #self.chat_mount(chat, Rule(classes="start-rule"))
-
                     # add new messages
-                    for message in data["messages"]:
-                        # the message id is message[0]
-                        # the message contents is message[1]
-                        # the timestamp (in string format) is message[2]
-                        # the sender name is message [3]
-                        self.mount_msg(chat, { 
-                            "message": message[1],
-                            "sender_name": message[3],
-                            "timestamp": message[2]
-                        })
+                    self.mount_msgs(chat, data)
             elif packet.packet_type == PacketType.PING:
                 pass # ignore ping packets
             elif packet.tag == "server-overview":

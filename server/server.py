@@ -134,7 +134,7 @@ class Server:
                 self.send_message(msg, channel_id, conn, "user")
                 reply = Packet(
                     PacketType.MESSAGE_RECV,
-                    {"message": msg, "sender_name": "user", "timestamp": datetime.now(), "channel_id": channel_id}
+                    {"message": msg, "sender_name": "user", "timestamp": datetime.now(), "channel_id": channel_id, "channel_name": self.db.get_channel_name_by_id(channel_id)}
                 )
             else:
                 reply = Packet(PacketType.ERROR, "Invalid packet type!")
