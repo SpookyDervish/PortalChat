@@ -120,7 +120,11 @@ class Portal(App):
 
                 # add new messages
                 for message in data["messages"]:
-                    chat.mount(Message(message[1], message[3], datetime.strptime(message[2], "%Y-%m-%d %H:%M:%S")))
+                    self.mount_msg(chat, {
+                        "message": message[1],
+                        "sender_name": message[3],
+                        "timestamp": message[2]
+                    })
             else:
                 self.notify(f"Unhandled packet: {packet}", title="Warning!", severity="warning")
 
