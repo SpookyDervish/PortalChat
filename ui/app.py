@@ -104,6 +104,8 @@ class Portal(App):
 
                         channel_list.root.add_leaf(channel_name, data=channel_id)
                     channel_list.root.expand_all()
+            elif packet.packet_type == PacketType.PING:
+                pass # ignore ping packets
             elif packet.tag == "server-overview":
                 server_info = packet.data["data"]
                 self.mount(ServerOverview(server_info["data"]), after=self.query_one(ChannelList))
