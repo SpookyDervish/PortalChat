@@ -89,7 +89,7 @@ def scan_network(network):
         # Process results as they are completed
         for future in concurrent.futures.as_completed(futures):
             ip = futures[future]
-            print("Scanning " + str(ip) + "...")
+            print("Scanning " + str(ip) + ": ", end='')
             try:
                 result = future.result()
                 if result:
