@@ -30,6 +30,8 @@ def get_subnet():
     
     # We'll use 'eth0' for wired or 'wlan0' for Wi-Fi, you can adjust based on your system.
     for interface, addrs in interfaces.items():
+        if "lo" in interface: continue # loopback
+
         print(interface)
         for addr in addrs:
             if addr.family == socket.AF_INET and not addr.address.startswith("127."):
