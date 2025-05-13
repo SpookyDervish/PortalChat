@@ -169,7 +169,8 @@ class Server:
                 reply = self.handle_packet(data, conn)
 
                 if reply != None:
-                    self.log(f"Send   : {reply}", 1)
+                    if reply.packet_type != PacketType.PING:
+                        self.log(f"Send   : {reply}", 1)
 
                     conn.sendall(pickle.dumps(reply))
             except (socket.error, EOFError) as e:
