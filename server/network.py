@@ -4,13 +4,15 @@ from server.packet import Packet, PacketType
 
 class Network:
     def __init__(self, server_ip: str):
+        self.buffer_size = 2048
+        self.port = 5555
+
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server = server_ip
-        self.port = 5555
         self.addr = (self.server, self.port)
         self.user = self.connect()
 
-        self.buffer_size = 2048
+        
 
     def get_client(self):
         return self.user
