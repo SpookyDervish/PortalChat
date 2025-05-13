@@ -1,6 +1,7 @@
 import socket
 import pickle
 import sys
+import traceback
 from _thread import start_new_thread
 from datetime import datetime
 
@@ -142,8 +143,8 @@ class Server:
                 )
             else:
                 reply = Packet(PacketType.ERROR, "Invalid packet type!")
-        except Exception as e:
-            self.log(f"Error while handling packet: {e}", 3)
+        except Exception:
+            self.log(f"Error while handling packet:\n[bold red]{traceback.format_exc()}[/bold red]", 3)
             reply = Packet(PacketType.ERROR, "Internal Server Error")
 
         if reply:
