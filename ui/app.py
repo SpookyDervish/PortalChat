@@ -168,17 +168,7 @@ class Portal(App):
     def ping_loop(self):
         try:
             while self.is_open:
-                #self.n.client.recv(self.n.buffer_size)
-                """response = self.n.send(Packet(PacketType.WAIT))
-                self.packet_queue.put(response)
-                sleep(0.1)"""
-                
-                self.app.log("Recv started")
-                response = self.n.recv()
-                self.app.log("Adding to queue...")
-                self.packet_queue.put(response)
-                self.app.log("Recv came through and was added to queue!")
-                #self.packet_queue.put(Packet(PacketType.MESSAGE_RECV, {"message": "test", "timestamp": datetime.datetime.now(), "sender_name": "user"}), block=False)
+                pass
         except Exception: # server was closed
             server_list = self.query_one(ServerList)
             for button in server_list.query_one("#icons").children:
@@ -228,5 +218,5 @@ class Portal(App):
         welcome.styles.display = "none"
 
         channel_list.select_node(channel_list.root)
-        #self.ping_loop_worker = self.ping_loop()
+        self.ping_loop_worker = self.ping_loop()
         self.packet_handler_worker = self.packet_handler()
