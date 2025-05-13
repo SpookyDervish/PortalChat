@@ -33,6 +33,12 @@ class Portal(App):
         self.is_open = False
         if self.n:
             self.n.client.close()
+        if self.ping_loop_worker:
+            self.ping_loop_worker.cancel()
+            self.ping_loop_worker = None
+        if self.packet_handler_worker:
+            self.packet_handler_worker.cancel()
+            self.packet_handler_worker = None
         return super().action_quit()
 
     def on_mount(self):
