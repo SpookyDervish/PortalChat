@@ -3,7 +3,8 @@ from textual.widgets import Tree, Label, Rule
 from textual.css.query import NoMatches
 from textual import work
 from queue import Queue
-from time import sleep
+import datetime
+import time
 
 from ui.widgets.sidebar import ServerList, ChannelList
 from ui.widgets.welcome import Welcome
@@ -13,7 +14,6 @@ from ui.widgets.server_overview import ServerOverview
 
 from server.network import Network
 from server.packet import Packet, PacketType
-
 
 class Portal(App):
     DEFAULT_CSS = """
@@ -152,14 +152,15 @@ class Portal(App):
 
     @work(thread=True)
     def ping_loop(self):
-
         try:
             while self.is_open:
+                #self.n.client.recv(self.n.buffer_size)
                 """response = self.n.send(Packet(PacketType.WAIT))
                 self.packet_queue.put(response)
                 sleep(0.1)"""
 
-                self.packet_queue.put(self.n.recv())
+                #self.packet_queue.put(self.n.recv())
+                self.packet_queue.put(Packet(PacketType.MESSAGE_RECV, {"message": "test", "timestamp": datetime.datetime.now(), "sender_name": "user"}), block=False)
         except Exception: # server was closed
             server_list = self.query_one(ServerList)
             for button in server_list.query_one("#icons").children:
