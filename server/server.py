@@ -159,9 +159,10 @@ class Server:
         while True:
             try:
                 data = pickle.loads(conn.recv(2048))
-                self.log(f"Receive: {data}", 1)
                 if not isinstance(data, Packet):
                     break
+                if data.packet_type != PacketType.PING:
+                    self.log(f"Receive: {data}", 1)
 
                 if data.packet_type == PacketType.DISCONNECT:
                     break
