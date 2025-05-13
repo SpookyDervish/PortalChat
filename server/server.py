@@ -32,7 +32,7 @@ class Server:
         self.port = 5555
 
         self.log("Getting database...")
-        self.db = Database()
+        self.db = Database(self)
 
         self.log("Creating socket...", 1)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
