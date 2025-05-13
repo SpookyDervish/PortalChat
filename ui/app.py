@@ -84,8 +84,7 @@ class Portal(App):
         response = self.n.send(Packet(PacketType.MESSAGE_SEND, {"message": message, "channel_id": self.channel_id}))
         self.packet_queue.put(response)
 
-    @work
-    async def mount_msgs(self, chat, data, banner: bool = False):
+    def mount_msgs(self, chat, data, banner: bool = False):
         if banner:
             chat.mount(Label(f"[b][u]Welcome![/u][/b]\n[dim]This is the start of the #{data['channel_name']} channel.[/dim]\n[dim]Portal has only [bold]just started development[/bold], so watch out for bugs![/dim]"))
             chat.mount(Rule(classes="start-rule"))
@@ -118,7 +117,7 @@ class Portal(App):
         while self.is_open:
             packet = self.packet_queue.get()
             if packet.packet_type == PacketType.MESSAGE_RECV:
-                self.mount_msgs(chat, {
+                self.call_from_thread(self.mount_msgs(chat, {
                     "messages": [(
                         None, # not needed atm
                         packet.data["message"],
@@ -126,7 +125,7 @@ class Portal(App):
                         packet.data["sender_name"]
                     )],
                     "channel_name": None
-                })
+                }))
             elif packet.packet_type == PacketType.DATA:
                 if packet.data["type"] == "SERVER_CHANNELS":
                     channel_list.clear()
@@ -142,7 +141,7 @@ class Portal(App):
                     chat.remove_children()
 
                     # add new messages
-                    self.mount_msgs(chat, data, banner=True)
+                    self.call_from_thread(self.mount_msgs(chat, data, banner=True))
                 elif packet.tag == "server-overview":
                     self.update_welcome(packet.data["data"])
             elif packet.packet_type == PacketType.PING:
@@ -159,8 +158,8 @@ class Portal(App):
                 self.packet_queue.put(response)
                 sleep(0.1)"""
 
-                #self.packet_queue.put(self.n.recv())
-                self.packet_queue.put(Packet(PacketType.MESSAGE_RECV, {"message": "test", "timestamp": datetime.datetime.now(), "sender_name": "user"}), block=False)
+                self.packet_queue.put(self.n.recv())
+                #self.packet_queue.put(Packet(PacketType.MESSAGE_RECV, {"message": "test", "timestamp": datetime.datetime.now(), "sender_name": "user"}), block=False)
         except Exception: # server was closed
             server_list = self.query_one(ServerList)
             for button in server_list.query_one("#icons").children:
