@@ -12,6 +12,9 @@ class Network:
 
     def get_client(self):
         return self.user
+    
+    def close(self):
+        self.client.close()
 
     def connect(self) -> Packet:
         self.client.connect(self.addr)

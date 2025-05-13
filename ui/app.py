@@ -167,6 +167,9 @@ class Portal(App):
         if self.packet_handler_worker:
             self.packet_handler_worker.cancel()
             self.packet_handler_worker = None
+        if self.n:
+            self.n.close()
+            self.n = None
 
         chat = self.query_one(Chat)
         channel_list = self.query_one(ChannelList)
