@@ -3,6 +3,7 @@ from textual.widgets import Tree, Label, Rule
 from textual.css.query import NoMatches
 from textual import work
 from queue import Queue
+from time import sleep
 
 from ui.widgets.sidebar import ServerList, ChannelList
 from ui.widgets.welcome import Welcome
@@ -154,8 +155,11 @@ class Portal(App):
 
         try:
             while self.is_open:
-                response = self.n.send(Packet(PacketType.PING))
+                """response = self.n.send(Packet(PacketType.WAIT))
                 self.packet_queue.put(response)
+                sleep(0.1)"""
+
+                self.packet_queue.put(self.n.recv())
         except Exception: # server was closed
             server_list = self.query_one(ServerList)
             for button in server_list.query_one("#icons").children:

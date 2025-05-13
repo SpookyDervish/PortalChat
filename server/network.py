@@ -10,16 +10,21 @@ class Network:
         self.addr = (self.server, self.port)
         self.user = self.connect()
 
+        self.buffer_size = 2048
+
     def get_client(self):
         return self.user
     
     def close(self):
         self.client.close()
 
+    def recv(self) -> Packet:
+        return pickle.loads(self.client.recv(self.buffer_size))
+
     def connect(self) -> Packet:
         self.client.connect(self.addr)
-        return pickle.loads(self.client.recv(2048))
+        return self.recv()
         
     def send(self, data) -> Packet:
         self.client.send(pickle.dumps(data))
-        return pickle.loads(self.client.recv(2048))
+        return self.recv()
