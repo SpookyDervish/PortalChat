@@ -1,4 +1,4 @@
-import socket, pickle
+import socket, pickle, time
 from server.packet import Packet, PacketType
 
 
@@ -21,7 +21,8 @@ class Network:
     def close(self):
         self.client.close()
 
-    def recv(self) -> Packet:
+    def recv(self, blocking: bool = False) -> Packet:
+        self.client.setblocking(blocking)
         try:
             response = self.client.recv(self.buffer_size)
         except (BlockingIOError, socket.error):
@@ -33,9 +34,9 @@ class Network:
         self.client.connect(self.addr)
         self.client.settimeout(self.timeout)
         self.client.setblocking(0)
-        return self.recv()
+        return self.recv(True)
         
     def send(self, data) -> Packet:
 
         self.client.send(pickle.dumps(data))
-        return self.recv()
+        return self.recv(True)
