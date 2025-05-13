@@ -22,12 +22,20 @@ class Network:
         self.client.close()
 
     def recv(self) -> Packet:
-        return pickle.loads(self.client.recv(self.buffer_size))
+        try:
+            response = self.client.recv(self.buffer_size)
+        except (BlockingIOError, socket.error):
+            return None
+
+        return pickle.loads(response)
 
     def connect(self) -> Packet:
         self.client.connect(self.addr)
+        self.client.settimeout(self.timeout)
+        self.client.setblocking(0)
         return self.recv()
         
     def send(self, data) -> Packet:
+
         self.client.send(pickle.dumps(data))
         return self.recv()
