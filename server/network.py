@@ -11,12 +11,6 @@ class Network:
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server = server_ip
         self.addr = (self.server, self.port)
-        self.user = self.connect()
-
-        
-
-    def get_client(self):
-        return self.user
     
     def close(self):
         self.client.close()
@@ -32,9 +26,6 @@ class Network:
 
     def connect(self) -> Packet:
         self.client.connect(self.addr)
-        self.client.settimeout(self.timeout)
-        self.client.setblocking(0)
-        return self.recv(True)
         
     def send(self, data) -> Packet:
 
