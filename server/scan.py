@@ -60,7 +60,6 @@ def scan_ip(ip):
 
         # Attempt to connect to the given IP and port
         result = sock.connect_ex((str(ip), PORT))
-        print(f"{(str(ip), PORT)} : {result}")
 
         if result == 0:
             # get info about the server
@@ -96,11 +95,3 @@ def scan_network(network):
                     yield result
             except Exception as e:
                 yield f"Error scanning {ip}: {e}"
-
-
-if __name__ == "__main__":
-    local_ip, netmask = get_subnet()
-    network = get_subnet_network(local_ip, netmask)
-
-    for server in scan_network(network):
-        print("FOUND: " + server)

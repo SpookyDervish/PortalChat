@@ -93,6 +93,10 @@ class Portal(App):
                 msg[2]
             ))
 
+    @work
+    async def update_welcome(self, server_info):
+        self.mount(ServerOverview(server_info), after=self.query_one(ChannelList))
+
     @work(thread=True)
     def packet_handler(self):
         chat = self.query_one(Chat)
@@ -126,11 +130,10 @@ class Portal(App):
 
                     # add new messages
                     self.mount_msgs(chat, data, banner=True)
+                elif packet.tag == "server-overview":
+                    self.update_welcome(packet.data["data"])
             elif packet.packet_type == PacketType.PING:
                 pass # ignore ping packets
-            elif packet.tag == "server-overview":
-                server_info = packet.data["data"]
-                self.mount(ServerOverview(server_info["data"]), after=self.query_one(ChannelList))
             else:
                 self.notify(f"Unhandled packet: {packet}", title="Warning!", severity="warning")
 
