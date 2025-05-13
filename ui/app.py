@@ -168,9 +168,7 @@ class Portal(App):
     def ping_loop(self):
         try:
             while self.is_open:
-                response = self.n.recv()
-                if response:
-                    self.packet_queue.put(response)
+                self.packet_queue.put(self.n.recv())
         except Exception: # server was closed
             server_list = self.query_one(ServerList)
             for button in server_list.query_one("#icons").children:

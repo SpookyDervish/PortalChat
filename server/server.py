@@ -59,7 +59,6 @@ class Server:
                 break
 
             conn, addr = self.sock.accept()
-            conn.setblocking(1)
 
             if addr[0] in self.BLOCKED_IPS:
                 self.log(f"Ignored connection from blocked IP: {addr}", 3)

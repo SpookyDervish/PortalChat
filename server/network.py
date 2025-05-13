@@ -9,8 +9,6 @@ class Network:
         self.timeout = 5
 
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client.settimeout(self.timeout)
-        self.client.setblocking(0)
         self.server = server_ip
         self.addr = (self.server, self.port)
         self.user = self.connect()
@@ -24,9 +22,7 @@ class Network:
         self.client.close()
 
     def recv(self) -> Packet:
-        response = self.client.recv(self.buffer_size)
-        if not response: return None
-        return pickle.loads(response)
+        return pickle.loads(self.client.recv(self.buffer_size))
 
     def connect(self) -> Packet:
         self.client.connect(self.addr)
