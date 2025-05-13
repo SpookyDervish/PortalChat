@@ -1,5 +1,6 @@
 from textual.app import App, ComposeResult
 from textual.widgets import Tree, Label, Rule
+from textual.css.query import NoMatches
 from textual import work
 from queue import Queue
 
@@ -95,6 +96,11 @@ class Portal(App):
 
     @work
     async def update_welcome(self, server_info):
+        try:
+            self.query_one(ServerOverview).remove()
+        except NoMatches:
+            pass
+
         self.mount(ServerOverview(server_info), after=self.query_one(ChannelList))
 
     @work(thread=True)
