@@ -21,4 +21,4 @@ class ServerOverview(Vertical):
         self.info = server_info
 
     def compose(self):
-        yield Label(f"[b u]Welcome to {self.info['title']}[/b u]\n[b]Online: [green]{self.info['online']}[/green][/b]\n\n[d]{self.info['description']}[/d]")
+        yield Label(f"[b u]Welcome to {self.info['title']}[/b u]\n[b]Online: [green]{self.info['online']}[/green][/b]\n\n{self.info['description']}")
