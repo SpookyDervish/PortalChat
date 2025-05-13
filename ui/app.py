@@ -84,17 +84,18 @@ class Portal(App):
         response = self.n.send(Packet(PacketType.MESSAGE_SEND, {"message": message, "channel_id": self.channel_id}))
         self.packet_queue.put(response)
 
-    def mount_msgs(self, chat, data, banner: bool = False):
+    @work
+    async def mount_msgs(self, chat, data, banner: bool = False):
         if banner:
-            chat.mount(Label(f"[b][u]Welcome![/u][/b]\n[dim]This is the start of the #{data['channel_name']} channel.[/dim]\n[dim]Portal has only [bold]just started development[/bold], so watch out for bugs![/dim]"))
-            chat.mount(Rule(classes="start-rule"))
+            await chat.mount(Label(f"[b][u]Welcome![/u][/b]\n[dim]This is the start of the #{data['channel_name']} channel.[/dim]\n[dim]Portal has only [bold]just started development[/bold], so watch out for bugs![/dim]"))
+            await chat.mount(Rule(classes="start-rule"))
 
         for msg in data["messages"]:
             # the message id is message[0]
             # the message contents is message[1]
             # the timestamp (in string format) is message[2]
             # the sender name is message [3]
-            chat.mount(Message(
+            await chat.mount(Message(
                 msg[1],
                 msg[3],
                 msg[2]
@@ -116,8 +117,10 @@ class Portal(App):
 
         while self.is_open:
             packet = self.packet_queue.get()
+            self.app.log(f"Got packet from queue: {packet}")
             if packet.packet_type == PacketType.MESSAGE_RECV:
-                self.call_from_thread(self.mount_msgs(chat, {
+                self.app.log("Calling mount_msgs from the mian thread...")
+                self.call_from_thread(self.mount_msgs, chat, {
                     "messages": [(
                         None, # not needed atm
                         packet.data["message"],
@@ -125,9 +128,12 @@ class Portal(App):
                         packet.data["sender_name"]
                     )],
                     "channel_name": None
-                }))
+                })
+                self.app.log("Done with msgs!")
             elif packet.packet_type == PacketType.DATA:
                 if packet.data["type"] == "SERVER_CHANNELS":
+                    self.app.log("Updating channel list...")
+
                     channel_list.clear()
                     for channel in packet.data["data"]:
                         channel_id = channel[0]
@@ -135,16 +141,25 @@ class Portal(App):
 
                         channel_list.root.add_leaf(channel_name, data=channel_id)
                     channel_list.root.expand_all()
+
+                    self.app.log("Done updating channel list!")
                 elif packet.data["type"] == "SERVER_MSGS":
+                    
                     data = packet.data["data"]
                     # delete other messages
+                    self.app.log("Clearing previous msg history...")
                     chat.remove_children()
 
+                    self.app.log("Calling mount_msgs from a thread to update entire message history...")
                     # add new messages
-                    self.call_from_thread(self.mount_msgs(chat, data, banner=True))
+                    self.call_from_thread(self.mount_msgs, chat, data, banner=True)
+                    self.app.log("Done redrawing entire message history!")
                 elif packet.tag == "server-overview":
-                    self.update_welcome(packet.data["data"])
+                    self.app.log("Updating welcome...")
+                    self.call_from_thread(self.update_welcome, packet.data["data"])
+                    self.app.log("Done updating welcome!")
             elif packet.packet_type == PacketType.PING:
+                self.app.log("Ignoring ping packet...")
                 pass # ignore ping packets
             else:
                 self.notify(f"Unhandled packet: {packet}", title="Warning!", severity="warning")
@@ -157,8 +172,12 @@ class Portal(App):
                 """response = self.n.send(Packet(PacketType.WAIT))
                 self.packet_queue.put(response)
                 sleep(0.1)"""
-
-                self.packet_queue.put(self.n.recv())
+                
+                self.app.log("Recv started")
+                response = self.n.recv()
+                self.app.log("Adding to queue...")
+                self.packet_queue.put(response)
+                self.app.log("Recv came through and was added to queue!")
                 #self.packet_queue.put(Packet(PacketType.MESSAGE_RECV, {"message": "test", "timestamp": datetime.datetime.now(), "sender_name": "user"}), block=False)
         except Exception: # server was closed
             server_list = self.query_one(ServerList)
@@ -209,5 +228,5 @@ class Portal(App):
         welcome.styles.display = "none"
 
         channel_list.select_node(channel_list.root)
-        self.ping_loop_worker = self.ping_loop()
+        #self.ping_loop_worker = self.ping_loop()
         self.packet_handler_worker = self.packet_handler()
