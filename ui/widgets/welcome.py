@@ -1,9 +1,9 @@
-from textual.containers import Vertical
+from textual.containers import VerticalScroll
 from textual.widgets import Static, Markdown, Rule
 from rich.text import Text
 
 
-class Welcome(Vertical):
+class Welcome(VerticalScroll):
     DEFAULT_CSS = """
     Welcome {
         align: center middle;
@@ -34,7 +34,15 @@ class Welcome(Vertical):
 **Portal** is a *somewhat* well made chat app, designed to be used as a replacement to `Discord` where you can't use it. ;)
 
 # How do I use Portal?
-It's simple! In the bottom left, click on the **"+"** button, this is where you can add servers! Portal **will automatically find servers for you** on your local network, and you can tell Portal to remember them!"""
+It's simple! In the bottom left, click on the **"+"** button, this is where you can add servers! Portal **will automatically find servers for you** on your local network, and you can tell Portal to remember them!
+Once you're in a server, you can look at any channel and see the messages.
+
+# Why use Portal?
+While Portal **is** a pashion project, it does have real world uses!
+1. Portal is local, meaning you don't have to connect to some server, somewhere else in the world! Completely secure.
+2. Portal is local!! You can do anything with the code as Portal is open source, make any modifications you like.
+3. Portal is portable, and works without internet!
+4. Portal is low latency because it is local, messages are nearly instantaneous!"""
     
     
     COLOURS = [

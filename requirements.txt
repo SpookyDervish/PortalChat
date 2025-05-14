@@ -1,0 +1,4 @@
+textual
+psutil
+rich_pixels
+gitpython

@@ -1,4 +1,4 @@
-import socket, pickle, time
+import socket, pickle, struct
 from server.packet import Packet, PacketType
 
 
@@ -11,6 +11,18 @@ class Network:
         self.server = server_ip
         self.addr = (self.server, self.port)
         self.connect()
+
+    def send_image(self, image_path: str):
+        """Send an image over the socket. The image is **required** to be in `.png` format."""
+        # read image data
+        with open(image_path, "rb") as f:
+            image_data = f.read()
+
+        # Send length of data (4 bytes, big-endian unsigned int)
+        self.client.sendall(struct.pack('>I', len(image_data)))
+
+        # Send image data
+        self.client.sendall(image_data)
     
     def close(self):
         self.client.close()
