@@ -3,9 +3,8 @@ from textual.widgets import Tree, Label, Rule
 from textual.css.query import NoMatches
 from textual import work
 from queue import Queue
-import datetime
-import time
 
+from ui.widgets.update_screen import UpdateScreen
 from ui.widgets.sidebar import ServerList, ChannelList
 from ui.widgets.welcome import Welcome
 from ui.widgets.chat import Chat, Message
@@ -43,6 +42,8 @@ class Portal(App):
         return super().action_quit()
 
     def on_mount(self):
+        self.app.push_screen(UpdateScreen())
+
         self.is_open = True
         self.n = None
         self.channel_id = None
