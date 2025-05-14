@@ -1,6 +1,8 @@
 from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator
 from textual.containers import Vertical
+from textual import on
+from textual.events import ScreenResume
 
 import subprocess, sys
 
@@ -35,7 +37,8 @@ class UpdateScreen(ModalScreen):
             yield Label("[dim]This will only take a moment!\nPortal will restart after the updates are complete[/dim]")
             yield LoadingIndicator()
 
-    def on_mount(self):
+    @on(ScreenResume)
+    def check(self):
         title = self.query_one("#title")
 
         if self.check_for_updates()[0] == True:
