@@ -11,6 +11,7 @@ class Network:
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server = server_ip
         self.addr = (self.server, self.port)
+        self.connect()
     
     def close(self):
         self.client.close()
@@ -24,7 +25,7 @@ class Network:
 
         return pickle.loads(response)
 
-    def connect(self) -> Packet:
+    def connect(self):
         self.client.connect(self.addr)
         
     def send(self, data) -> Packet:
