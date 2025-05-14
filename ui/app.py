@@ -42,8 +42,6 @@ class Portal(App):
         return super().action_quit()
 
     def on_mount(self):
-        self.app.push_screen(UpdateScreen())
-
         self.is_open = True
         self.n = None
         self.channel_id = None
@@ -55,6 +53,7 @@ class Portal(App):
         self.packet_handler_worker = None
         self.packet_queue: Queue[Packet] = Queue()
         self.notify("Portal is [bold]EXTREMELY[/bold] buggy at the moment, watch out! I'm currently migrating it to a queue system, and so your app may freeze when doing certain things, know I am working to fix this!", title="Watch out!", severity="warning", timeout=10)
+        self.app.push_screen(UpdateScreen())
 
     def on_tree_node_selected(self, event: Tree.NodeSelected):
         if self.n is None: return
