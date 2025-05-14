@@ -213,8 +213,11 @@ class Portal(App):
 
             return
 
-        self.n = Network(server_info[2]) # start a connection to the server
-
+        try:
+            self.n = Network(server_info[2]) # start a connection to the server
+        except ConnectionRefusedError: # the server isn't online
+            self.notify("That server isn't online at the moment.", title="Sorry!", severity="warning")
+            return
         
 
         chat.styles.display = "block"
