@@ -3,6 +3,7 @@ from textual.widgets import Label, LoadingIndicator
 from textual.containers import Vertical
 from textual import on, work
 from textual.events import ScreenResume
+from textual.worker import Worker, WorkerState
 
 import subprocess, sys
 
@@ -37,15 +38,25 @@ class UpdateScreen(ModalScreen):
             yield Label("[dim]This will only take a moment!\nPortal will restart after the updates are complete[/dim]")
             yield LoadingIndicator()
 
-    @on(ScreenResume)
-    def check(self):
+    @on(Worker.StateChanged)
+    def worker_state_changed(self, event: Worker.StateChanged):
         title = self.query_one("#title")
 
-        if self.check_for_updates()[0] == True:
-            title.update("[b u]Portal is updating...[/b u]")
-            self.update()
-        else:
-            self.dismiss()
+        worker = event.worker
+
+        if worker.state == WorkerState.SUCCESS:
+            if worker.name == "update-check":
+                self.app.log(f"Updates available: {worker.result}")
+
+                if event.worker.result[0] == True:
+                    title.update("[b u]Portal is updating...[/b u]")
+                    self.update()
+                else:
+                    self.dismiss()
+
+    @on(ScreenResume)
+    def check(self):
+        self.check_for_updates()
 
     @work(thread=True)
     def update(self):
@@ -66,7 +77,7 @@ class UpdateScreen(ModalScreen):
 
         return has_changes, unstaged, untracked
 
-    @work(thread=True)
+    @work(thread=True, name="update-check")
     def check_for_updates(self):
         """Checks repo for updates.
 
