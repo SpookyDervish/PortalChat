@@ -1,7 +1,7 @@
 from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator
 from textual.containers import Vertical
-from textual import on
+from textual import on, work
 from textual.events import ScreenResume
 
 import subprocess, sys
@@ -47,6 +47,7 @@ class UpdateScreen(ModalScreen):
         else:
             self.dismiss()
 
+    @work(thread=True)
     def update(self):
         origin = self.repo.remotes.origin
         origin.pull()
@@ -65,6 +66,7 @@ class UpdateScreen(ModalScreen):
 
         return has_changes, unstaged, untracked
 
+    @work(thread=True)
     def check_for_updates(self):
         """Checks repo for updates.
 
