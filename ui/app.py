@@ -214,7 +214,6 @@ class Portal(App):
             return
 
         self.n = Network(server_info[2]) # start a connection to the server
-        self.packet_queue.put(self.n.send(Packet(PacketType.GET, {"type": "CHANNELS"})))
 
         
 
@@ -226,3 +225,8 @@ class Portal(App):
         channel_list.select_node(channel_list.root)
         self.ping_loop_worker = self.ping_loop()
         self.packet_handler_worker = self.packet_handler()
+
+        # ! NOTE: i've noticed this can sometimes cause a race cndition where the socket isn't connected
+        #         yet, may need to fix. for now, i've moved it down below some of the packet handling
+        #         setup to give the network some time to connect
+        self.packet_queue.put(self.n.send(Packet(PacketType.GET, {"type": "CHANNELS"})))
