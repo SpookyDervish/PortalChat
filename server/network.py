@@ -18,6 +18,8 @@ class Network:
         with open(image_path, "rb") as f:
             image_data = f.read()
 
+        self.client.setblocking(True)
+
         # Send length of data (4 bytes, big-endian unsigned int)
         self.client.sendall(struct.pack('>I', len(image_data)))
 

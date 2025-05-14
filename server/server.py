@@ -192,6 +192,15 @@ class Server:
         s.close()
 
         return thing
+    
+    def recv_all(self, length: int):
+        data = b''
+        while len(data) < length:
+            more = self.sock.recv(length - len(data))
+            if not more:
+                raise EOFError("Socket closed before we received all data")
+            data += more
+        return data
 
     def log(self, message: str, level: int = 2):
         """
