@@ -89,7 +89,7 @@ class Server:
             )
 
         for user in self.clients:
-            if user == sender_conn: continue
+            #if user == sender_conn: continue
 
             self.log(f"Sending packet to {user}: {packet}", 1)
 

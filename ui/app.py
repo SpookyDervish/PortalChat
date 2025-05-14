@@ -82,8 +82,8 @@ class Portal(App):
 
     @work
     async def send_message(self, message: str):
-        response = self.n.send(Packet(PacketType.MESSAGE_SEND, {"message": message, "channel_id": self.channel_id}))
-        self.packet_queue.put(response)
+        self.n.send(Packet(PacketType.MESSAGE_SEND, {"message": message, "channel_id": self.channel_id}))
+        #self.packet_queue.put(response)
 
     @work
     async def mount_msgs(self, chat, data, banner: bool = False):
