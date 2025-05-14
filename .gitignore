@@ -2,3 +2,4 @@
 __pycache__
 portal_db.db
 portal_db.db-journal
+start_server.py
