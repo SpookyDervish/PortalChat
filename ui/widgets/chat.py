@@ -17,7 +17,7 @@ class Message(Vertical):
 
         .user-icon {
             dock: left;   
-            width: 4;
+            width: 6;
             margin-right: 1;
         }
 
@@ -38,7 +38,7 @@ class Message(Vertical):
         self.sender_icon_path = sender_icon_path
 
     def compose(self):
-        yield Image(self.sender_icon_path, (4, 4), classes="user-icon")
+        yield Image(self.sender_icon_path, (6, 6), classes="user-icon")
         yield Label(f"[bold]@{self.user_name}[/bold] [dim]({self.send_time.strftime('%I:%M %p')})[/dim]", classes="user-name")
         label = Label(self.content, classes="msg-content")
 

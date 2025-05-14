@@ -3,6 +3,7 @@ from textual.widgets import Tree
 from textual.widgets import Button, Rule
 
 from ui.widgets.add_server import AddServer
+from ui.widgets.settings_menu import SettingsScreen
 
 
 class ChannelList(Tree):
@@ -43,7 +44,7 @@ class ServerList(Vertical):
         if event.button.id == "add-server-btn":
             self.app.push_screen(AddServer())
         elif event.button.id == "settings-btn":
-            self.app.notify("Sorry! The settings menu isn't implemented yet!", title="Woops!", severity="warning")
+            self.app.push_screen(SettingsScreen())
 
         if "server-btn" in event.button.classes:
             self.app.open_server(event.button.info)

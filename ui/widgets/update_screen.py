@@ -23,6 +23,7 @@ class UpdateScreen(ModalScreen):
             max-width: 50%;
             max-height: 50%;
             border: panel $primary;
+            border-title-align: center;
             align: center middle;
         }
 
