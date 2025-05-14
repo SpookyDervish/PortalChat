@@ -45,6 +45,8 @@ class ServerList(Vertical):
             self.app.push_screen(AddServer())
         elif event.button.id == "settings-btn":
             self.app.push_screen(SettingsScreen())
+        elif event.button.id == "start-server-btn":
+            self.app.notify("This button will be used to start a server via the UI in the future, however it isn't implemented at the moment. Came back later!", title="Sorry!", severity="warning")
 
         if "server-btn" in event.button.classes:
             self.app.open_server(event.button.info)
@@ -52,5 +54,6 @@ class ServerList(Vertical):
     def compose(self):
         yield VerticalScroll(id="icons")
         yield Rule()
+        yield Button("▶", variant="success", id="start-server-btn", classes="side-btn")
         yield Button("+", variant="primary", id="add-server-btn", classes="side-btn")
         yield Button("⚙", id="settings-btn", classes="side-btn")
