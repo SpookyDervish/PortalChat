@@ -4,6 +4,7 @@ from textual.containers import Vertical
 from textual import on, work
 from textual.events import ScreenResume
 from textual.worker import Worker, WorkerState
+from git import Repo
 
 import subprocess, sys
 
@@ -56,6 +57,8 @@ class UpdateScreen(ModalScreen):
 
     @on(ScreenResume)
     def check(self):
+        self.repo = Repo()
+
         self.check_for_updates()
 
     @work(thread=True)
