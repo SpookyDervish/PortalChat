@@ -85,11 +85,6 @@ class UpdateScreen(ModalScreen):
             bool: Is the current branch behind?
             int: How many commits is the current branch behind?
         """
-        try:
-            has_changes, _, _ = self.has_unstaged_changes() 
-        except:
-            return False, 0
-
         current_branch = self.repo.active_branch
         self.repo.remotes.origin.fetch()
 
