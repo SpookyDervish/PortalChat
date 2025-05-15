@@ -86,7 +86,7 @@ class Server:
                 PacketType.NOTIFICATION,
                 "You can't send messages because your username is invalid."
             )))
-            return
+            return False
 
         if not self.db.user_exists(sender_uuid):
             self.log(f"Creating user because doesn't exist: {sender_uuid}")
@@ -114,6 +114,7 @@ class Server:
             self.log(f"Sending packet to {user}: {packet}", 1)
 
             user.send(pickle.dumps(packet))
+        return True
 
     def interactive_terminal(self):
         while True:
@@ -158,11 +159,13 @@ class Server:
                 channel_id = packet.data["channel_id"] # TODO: check if the user has permission to send to that channel
                 
                 user_name = packet.data["username"]
-                self.send_message(msg, channel_id, conn, {"username": user_name, "uuid": packet.data["uuid"]})
-                reply = Packet(
-                    PacketType.MESSAGE_RECV,
-                    {"message": msg, "sender_name": user_name, "timestamp": datetime.now(), "channel_id": channel_id, "channel_name": self.db.get_channel_name_by_id(channel_id)}
-                )
+                did_send = self.send_message(msg, channel_id, conn, {"username": user_name, "uuid": packet.data["uuid"]})
+
+                if did_send:
+                    reply = Packet(
+                        PacketType.MESSAGE_RECV,
+                        {"message": msg, "sender_name": user_name, "timestamp": datetime.now(), "channel_id": channel_id, "channel_name": self.db.get_channel_name_by_id(channel_id)}
+                    )
             else:
                 reply = Packet(PacketType.ERROR, "Invalid packet type!")
         except Exception:
