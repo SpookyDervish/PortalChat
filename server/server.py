@@ -81,11 +81,8 @@ class Server:
         sender_name: str = sender_info["username"]
         sender_uuid: str = sender_info["uuid"]
 
-        if sender_name.strip() == "" or len(sender_name) > 25:
-            return Packet(
-                PacketType.NOTIFICATION,
-                "You can't send messages because your username is invalid."
-            )
+        if sender_name.strip() == "" or len(sender_name) > 25: # invalid username
+            return 
 
         if not self.db.user_exists(sender_uuid):
             self.log(f"Creating user because doesn't exist: {sender_uuid}")
@@ -158,11 +155,10 @@ class Server:
                 channel_id = packet.data["channel_id"] # TODO: check if the user has permission to send to that channel
                 
                 user_name = packet.data["username"]
-                reply = self.send_message(msg, channel_id, conn, {"username": user_name, "uuid": packet.data["uuid"]}) or Packet(
+                reply = Packet(
                         PacketType.MESSAGE_RECV,
                         {"message": msg, "sender_name": user_name, "timestamp": datetime.now(), "channel_id": channel_id, "channel_name": self.db.get_channel_name_by_id(channel_id)}
                     )
-                self.log(reply)
             else:
                 reply = Packet(PacketType.ERROR, "Invalid packet type!")
         except Exception:
