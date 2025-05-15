@@ -44,7 +44,7 @@ class Server:
             sys.exit(1)
         self.log(f"Server bound to: {self.sock.getsockname()}", 1)
 
-        self.log(f"\nServer title is \"{self.server_info["title"]}\"\n")
+        self.log(f"\nServer title is \"{self.server_info['title']}\"\n")
 
         self.sock.listen()
         self.log("Server is listening and ready to receive connections!")
