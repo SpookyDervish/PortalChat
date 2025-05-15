@@ -57,8 +57,11 @@ class Server:
         while True:
             if self.sock.fileno() == -1: # the socket is closed
                 break
-
-            conn, addr = self.sock.accept()
+            
+            try:
+                conn, addr = self.sock.accept()
+            except ConnectionAbortedError: # socket was closed by server owner
+                break
 
             if addr[0] in self.BLOCKED_IPS:
                 self.log(f"Ignored connection from blocked IP: {addr}", 3)
