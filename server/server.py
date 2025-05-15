@@ -156,6 +156,7 @@ class Server:
                 channel_id = packet.data["channel_id"] # TODO: check if the user has permission to send to that channel
                 
                 user_name = packet.data["username"]
+                self.send_message(msg, channel_id, conn, {"username": user_name, "uuid": packet.data["uuid"]})
                 reply = Packet(
                         PacketType.MESSAGE_RECV,
                         {"message": msg, "sender_name": user_name, "timestamp": datetime.now(), "channel_id": channel_id, "channel_name": self.db.get_channel_name_by_id(channel_id)}
