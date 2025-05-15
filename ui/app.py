@@ -253,7 +253,7 @@ class Portal(App):
 
         chat.styles.display = "block"
         channel_list.styles.display = "block"
-        channel_list.root.set_label(server_info[0])
+        channel_list.root.set_label("🌀 [bold red]" + server_info[0] + "[/]")
         welcome.styles.display = "none"
 
         channel_list.select_node(channel_list.root)
