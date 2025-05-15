@@ -4,7 +4,7 @@ from server.packet import Packet, PacketType
 
 class Network:
     def __init__(self, server_ip: str):
-        self.buffer_size = 2048
+        self.buffer_size = 2048 * 4
         self.port = 5555
 
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -36,7 +36,10 @@ class Network:
         except (BlockingIOError, socket.error):
             return None
 
-        return pickle.loads(response)
+        try:
+            return pickle.loads(response)
+        except pickle.UnpicklingError:
+            return Packet(PacketType.NOTIFICATION, "I'm tryna fix an issue where a server's memory can kinda be filled up, like I said, BETA. ;) - Nathaniel")
 
     def connect(self):
         self.client.connect(self.addr)

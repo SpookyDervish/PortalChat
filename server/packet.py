@@ -14,6 +14,7 @@ class PacketType(Enum):
     ERROR = 8
     DISCONNECT = 9
     WAIT = 10
+    NOTIFICATION = 11
 
 @dataclass
 class Packet:

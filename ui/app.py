@@ -165,6 +165,8 @@ class Portal(App):
             elif packet.packet_type == PacketType.PING:
                 self.app.log("Ignoring ping packet...")
                 pass # ignore ping packets
+            elif packet.packet_type == PacketType.NOTIFICATION:
+                self.notify(packet.data)
             else:
                 self.notify(f"Unhandled packet: {packet}", title="Warning!", severity="warning")
 
