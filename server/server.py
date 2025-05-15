@@ -44,6 +44,8 @@ class Server:
             sys.exit(1)
         self.log(f"Server bound to: {self.sock.getsockname()}", 1)
 
+        self.log(f"\nServer title is \"{self.server_info["title"]}\"\n")
+
         self.sock.listen()
         self.log("Server is listening and ready to receive connections!")
         self.log(f"IP: [bold green]{self.get_ip()}[/bold green]")
@@ -106,6 +108,7 @@ class Server:
             user_input = console.input("[bold green]>[/bold green] ")
 
             if user_input == "close":
+                self.log("[bold red blink]Server is shutting down![/]")
                 self.sock.close()
                 break
 
