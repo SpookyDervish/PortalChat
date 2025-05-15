@@ -69,6 +69,7 @@ class Database:
             content TEXT NOT NULL,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
             user_uuid TEXT,
+            user_name TEXT,
             channel_id INTEGER,
             FOREIGN KEY (user_uuid) REFERENCES users(user_uuid) ON DELETE SET NULL,
             FOREIGN KEY (channel_id) REFERENCES channels(channel_id) ON DELETE CASCADE
@@ -81,9 +82,6 @@ class Database:
             server_id = self.create_server(self.server.server_info["title"])
         else:
             server_id = server_id[0]
-
-        if not self.get_user_by_name("user"):
-            self.create_user("user")
 
         channel_id = self.get_channel_by_name(server_id, "general")
         if not channel_id:
@@ -188,7 +186,7 @@ class Database:
 
         return self.cur.lastrowid  # Return the new channel's ID
     
-    def create_message_in_channel(self, channel_id: int, user_uuid: int, content: str):
+    def create_message_in_channel(self, channel_id: int, user_uuid: str, user_name: str, content: str):
         # Check if the channel exists
         self.cur.execute("SELECT 1 FROM channels WHERE channel_id = ? LIMIT 1", (channel_id,))
         if self.cur.fetchone() is None:
@@ -197,13 +195,13 @@ class Database:
         # Optional: check if user exists (or let NULL be inserted)
         self.cur.execute("SELECT 1 FROM users WHERE user_uuid = ? LIMIT 1", (user_uuid,))
         if self.cur.fetchone() is None:
-            raise ValueError(f"User ID {user_uuid} does not exist.")
+            raise ValueError(f"User UUID {user_uuid} does not exist.")
 
         # Insert the message
         self.cur.execute("""
-            INSERT INTO messages (content, user_uuid, channel_id)
-            VALUES (?, ?, ?)
-        """, (content, user_uuid, channel_id))
+            INSERT INTO messages (content, user_uuid, user_name, channel_id)
+            VALUES (?, ?, ?, ?)
+        """, (content, user_uuid, user_name, channel_id))
 
         return self.cur.lastrowid  # Return the new message's ID
 
@@ -223,7 +221,7 @@ class Database:
         user_uuid = self.cur.lastrowid
         return user_uuid
     
-    def add_user_to_server(self, user_uuid: int, server_id: int):
+    def add_user_to_server(self, user_uuid: str, server_id: int):
         if self.is_user_in_server(user_uuid, server_id):
             return
 
@@ -232,7 +230,7 @@ class Database:
         ]
         self.cur.executemany("INSERT INTO memberships (user_uuid, server_id) VALUES (?, ?)", memberships)
 
-    def user_exists(self, user_uuid: int):
+    def user_exists(self, user_uuid: str):
         self.cur.execute("SELECT 1 FROM users WHERE user_uuid = ? LIMIT 1", (user_uuid,))
         return self.cur.fetchone() is not None
 
@@ -248,7 +246,7 @@ class Database:
         self.cur.execute("SELECT 1 FROM servers WHERE name = ? LIMIT 1", (name,))
         return self.cur.fetchone() is not None
 
-    def is_user_in_server(self, user_uuid: int, server_id: int):
+    def is_user_in_server(self, user_uuid: str, server_id: int):
         self.cur.execute("""
             SELECT 1 FROM memberships
             WHERE user_uuid = ? AND server_id = ?

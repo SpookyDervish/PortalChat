@@ -71,15 +71,17 @@ class Server:
             self.log(f"New connection! Address: {addr}")
             start_new_thread(self.handle_client, tuple([conn]))
 
-    def send_message(self, message: str, channel_id: int, sender_conn: socket.socket = None, sender_name: str = None):
-        """Send a message to all users and save the message to the DB.
+    def send_message(self, message: str, channel_id: int, sender_conn: socket.socket, sender_info: dict):
+        """Send a message to all users and save the message to the DB."""
+        sender_name = sender_info["username"]
+        sender_uuid = sender_info["uuid"]
 
-        Args:
-            message (str): The string contents of the message
-            sender_name (str, optional): What is the name of the user who sent the message? Defaults to a system message with no sender.
-        """
+        if not self.db.user_exists(sender_uuid):
+            self.db.create_user(sender_name, sender_uuid)
+            self.db.commit()
+
         self.log(f"@{sender_name} said \"{message}\" in channel ID [cyan]{channel_id}[/cyan].")
-        self.db.create_message_in_channel(channel_id, self.db.get_user_by_name(sender_name)[0], message)
+        self.db.create_message_in_channel(channel_id, sender_name, sender_uuid, message)
         self.log("Saving DB...")
         self.db.commit()
 
