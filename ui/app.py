@@ -225,13 +225,15 @@ class Portal(App):
             self.n.close()
             self.n = None
 
-        chat = self.query_one(Chat)
+        chat = self.query_one(Chat) # chat history
+        chat_area = self.query_one(ChatArea) # message box
         channel_list = self.query_one(ChannelList)
         welcome = self.query_one(Welcome)
 
         if server_info == None: # go back to welcome screen
             welcome.display = "block"
             chat.display = "none"
+            chat_area.display = 'none'
             channel_list.display = "none"
 
             try:
