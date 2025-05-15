@@ -78,8 +78,15 @@ class Server:
 
     def send_message(self, message: str, channel_id: int, sender_conn: socket.socket, sender_info: dict):
         """Send a message to all users and save the message to the DB."""
-        sender_name = sender_info["username"]
-        sender_uuid = sender_info["uuid"]
+        sender_name: str = sender_info["username"]
+        sender_uuid: str = sender_info["uuid"]
+
+        if sender_name.strip() == "":
+            sender_conn.send(pickle.dumps(Packet(
+                PacketType.NOTIFICATION,
+                "You can't send messages because your username is invalid."
+            )))
+            return
 
         if not self.db.user_exists(sender_uuid):
             self.log(f"Creating user because doesn't exist: {sender_uuid}")
