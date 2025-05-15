@@ -162,7 +162,7 @@ class Server:
                 was_sent = self.send_message(msg, channel_id, conn, {"username": user_name, "uuid": packet.data["uuid"]})
                 reply = Packet(
                         PacketType.MESSAGE_RECV,
-                        {"message": msg, "sender_name": f"{user_name}{was_sent and '' or ' [dim red](NOT SENT)[/] '}", "timestamp": datetime.now(), "channel_id": channel_id, "channel_name": self.db.get_channel_name_by_id(channel_id)}
+                        {"message": msg, "sender_name": f"{user_name}{not was_sent and ' [dim red](NOT SENT)[/] ' or ''}", "timestamp": datetime.now(), "channel_id": channel_id, "channel_name": self.db.get_channel_name_by_id(channel_id)}
                     )
             else:
                 reply = Packet(PacketType.ERROR, "Invalid packet type!")
