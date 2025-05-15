@@ -231,7 +231,6 @@ class Database:
         self.cur.executemany("INSERT INTO memberships (user_uuid, server_id) VALUES (?, ?)", memberships)
 
     def user_exists(self, user_uuid: str):
-        print(user_uuid)
         self.cur.execute("SELECT 1 FROM users WHERE user_uuid = ? LIMIT 1", (user_uuid,))
         return self.cur.fetchone() is not None
 
