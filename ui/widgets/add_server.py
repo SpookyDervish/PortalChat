@@ -2,6 +2,7 @@ from textual.screen import ModalScreen
 from textual.widgets import Static, DataTable, LoadingIndicator, Button
 from textual.containers import Vertical
 from textual import work, on
+from textual.markup import to_content, MarkupError
 
 from ui.widgets.sidebar_icon import Icon
 from server.scan import scan_network, get_subnet_network, get_subnet
@@ -61,6 +62,12 @@ class AddServer(ModalScreen):
         local_ip, netmash = get_subnet()
         for server in scan_network(get_subnet_network(local_ip, netmash)):
             # we minus 1 from the online count otherwise it includes ourselves
+
+            try:
+                to_content(server["data"]["title"])
+            except MarkupError:
+                pass
+
             table.add_row(server["data"]["title"], server["data"]["online"]-1, server["ip"])
 
         # remove loading text when done searching for servers
