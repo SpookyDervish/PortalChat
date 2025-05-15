@@ -192,6 +192,9 @@ class Portal(App):
             elif packet.packet_type == PacketType.PING:
                 self.app.log("Ignoring ping packet...")
                 pass # ignore ping packets
+            elif packet.packet_type == PacketType.CONNECTION_STARTED:
+                self.app.log("Ignoring connection packet...")
+                pass # ignore connection started packets
             elif packet.packet_type == PacketType.NOTIFICATION:
                 self.log(packet.data)
                 self.notify(packet.data)

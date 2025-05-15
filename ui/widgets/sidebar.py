@@ -12,6 +12,10 @@ class ChannelList(Tree):
         dock: left;
         max-width: 25;
         margin-left: 10;
+
+        & > .tree--cursor {
+            color: green;
+        }
     }
     """
 
