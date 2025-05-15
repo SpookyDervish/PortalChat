@@ -81,7 +81,7 @@ class Server:
             self.db.commit()
 
         self.log(f"@{sender_name} said \"{message}\" in channel ID [cyan]{channel_id}[/cyan].")
-        self.db.create_message_in_channel(channel_id, sender_name, sender_uuid, message)
+        self.db.create_message_in_channel(channel_id, sender_uuid, sender_name, message)
         self.log("Saving DB...")
         self.db.commit()
 
