@@ -77,6 +77,7 @@ class Server:
         sender_uuid = sender_info["uuid"]
 
         if not self.db.user_exists(sender_uuid):
+            self.log(f"Creating user because doesn't exist: {sender_uuid}")
             self.db.create_user(sender_name, sender_uuid)
             self.db.commit()
 

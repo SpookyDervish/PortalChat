@@ -214,7 +214,7 @@ class Database:
         return server_id
     
     def create_user(self, user_name: str, uuid: str):
-        if self.get_user_by_name(user_name):
+        if self.user_exists(uuid):
             raise ValueError(f"A user with the name \"{user_name}\" already exists!")
 
         self.cur.execute("INSERT INTO users (user_uuid, username) VALUES (?, ?)", (uuid,user_name))
@@ -231,6 +231,7 @@ class Database:
         self.cur.executemany("INSERT INTO memberships (user_uuid, server_id) VALUES (?, ?)", memberships)
 
     def user_exists(self, user_uuid: str):
+        print(user_uuid)
         self.cur.execute("SELECT 1 FROM users WHERE user_uuid = ? LIMIT 1", (user_uuid,))
         return self.cur.fetchone() is not None
 
