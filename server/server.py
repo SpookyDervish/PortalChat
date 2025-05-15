@@ -81,9 +81,12 @@ class Server:
         sender_name: str = sender_info["username"]
         sender_uuid: str = sender_info["uuid"]
 
-        print(sender_name.strip() == "", len(sender_name) > 25)
         if sender_name.strip() == "" or len(sender_name) > 25: # invalid username
-            return 
+            sender_conn.sendall(pickle.dumps(Packet(
+                PacketType.NOTIFICATION,
+                "You can't send messages because your username is invalid."
+            )))
+            return
 
         if not self.db.user_exists(sender_uuid):
             self.log(f"Creating user because doesn't exist: {sender_uuid}")
