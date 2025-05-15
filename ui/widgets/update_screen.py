@@ -6,7 +6,7 @@ from textual.events import ScreenResume
 from textual.worker import Worker, WorkerState
 from git import Repo
 
-import subprocess, sys
+import sys, os
 
 
 class UpdateScreen(ModalScreen):
@@ -67,7 +67,8 @@ class UpdateScreen(ModalScreen):
         origin = self.repo.remotes.origin
         origin.pull()
 
-        subprocess.Popen([sys.executable] + sys.argv)
+        #subprocess.Popen([sys.executable] + sys.argv)
+        os.execv(__file__, sys.argv)
         sys.exit(0)
 
     def has_unstaged_changes(self):
