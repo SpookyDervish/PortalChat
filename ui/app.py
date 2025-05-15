@@ -6,6 +6,7 @@ from queue import Queue
 
 import uuid
 import os
+import configparser
 
 from ui.widgets.update_screen import UpdateScreen
 from ui.widgets.sidebar import ServerList, ChannelList
@@ -44,6 +45,15 @@ class Portal(App):
             self.packet_handler_worker = None
         return super().action_quit()
 
+    def init_settings_file(self):
+        self.config["MyAccount"] = {
+            "username": "user",
+            "icon_path": os.path.abspath("assets/images/default_user.png")
+        }
+        with open('user_settings.ini', "w") as config_file:
+            self.config.write(config_file)
+
+
     def on_mount(self):
         # generate unique user id
         if not os.path.isfile("my_uuid.txt"):
@@ -53,6 +63,11 @@ class Portal(App):
         # get unique user id
         with open("my_id.txt") as f:
             self.user_id = f.read()
+
+        self.config = configparser.ConfigParser()
+        if not os.path.isfile('user_settings.ini'):
+            self.init_settings_file()
+        self.config.read("user_settings.ini")
 
         self.is_open = True
         self.n = None
@@ -94,7 +109,7 @@ class Portal(App):
 
     @work
     async def send_message(self, message: str):
-        self.n.send(Packet(PacketType.MESSAGE_SEND, {"message": message, "channel_id": self.channel_id}))
+        self.n.send(Packet(PacketType.MESSAGE_SEND, {"message": message, "channel_id": self.channel_id, "username": self.config.get("MyAccount", "username"), "uuid": self.user_id}))
         #self.packet_queue.put(response)
 
     @work

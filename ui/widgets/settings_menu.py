@@ -99,25 +99,16 @@ class SettingsScreen(ModalScreen):
     def __init__(self, name = None, id = None, classes = None):
         super().__init__(name, id, classes)
         self.config = configparser.ConfigParser()
-        if not os.path.isfile('user_settings.ini'):
-            self.init_settings_file()
-        else:
-            self.config.read("user_settings.ini")
+        self.config.read("user_settings.ini")
 
         if not os.path.isfile(self.config.get("MyAccount", "icon_path")):
             self.config.set("MyAccount", "icon_path", os.path.abspath("assets/images/default_user.png"))
             self.save_settings()
-
-    def init_settings_file(self):
-        self.config["MyAccount"] = {
-            "username": "user",
-            "icon_path": os.path.abspath("assets/images/default_user.png")
-        }
-        self.save_settings()
         
     def save_settings(self):
         with open('user_settings.ini', "w") as config_file:
             self.config.write(config_file)
+        self.app.config = self.config
 
     def on_key(self, event):
         if event.key == "escape":

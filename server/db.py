@@ -217,7 +217,7 @@ class Database:
         if self.get_user_by_name(user_name):
             raise ValueError(f"A user with the name \"{user_name}\" already exists!")
 
-        self.cur.execute("INSERT INTO users (uuid, username) VALUES (?, ?)", (uuid,user_name))
+        self.cur.execute("INSERT INTO users (user_uuid, username) VALUES (?, ?)", (uuid,user_name))
         user_uuid = self.cur.lastrowid
         return user_uuid
     
