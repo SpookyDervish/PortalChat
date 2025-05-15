@@ -93,11 +93,11 @@ class Database:
     def close(self):
         self.conn.close()
 
-    def update_username(self, member_id: id, new_username: str):
+    def update_username(self, uuid: id, new_username: str):
         self.cur.execute("""
-            UPDATE members SET name = ?
-            WHERE member_id = ?
-        """, (new_username, member_id))
+            UPDATE users SET username = ?
+            WHERE user_uuid = ?
+        """, (new_username, uuid))
 
     def get_channel_name_by_id(self, channel_id: int):
         self.cur.execute("""
@@ -125,6 +125,14 @@ class Database:
             WHERE username = ?
             LIMIT 1
         """, (username,))
+        return self.cur.fetchone()
+    
+    def get_user(self, uuid: str):
+        self.cur.execute("""
+            SELECT * FROM users
+            WHERE user_uuid = ?
+            LIMIT 1
+        """, (uuid,))
         return self.cur.fetchone()
 
     def get_server_by_name(self, server_name: str):

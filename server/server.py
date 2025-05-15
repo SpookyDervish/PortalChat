@@ -86,6 +86,11 @@ class Server:
             self.db.create_user(sender_name, sender_uuid)
             self.db.commit()
 
+        current_username = self.db.get_user(sender_uuid)[1] 
+        if current_username != sender_name: # user has changed their username since their last msg
+            self.db.update_username(sender_uuid, sender_name)
+            self.log(f"Updated username for {sender_uuid} from {current_username} to {sender_name}")
+            
         self.log(f"@{sender_name} said \"{message}\" in channel ID [cyan]{channel_id}[/cyan].")
         self.db.create_message_in_channel(channel_id, sender_uuid, sender_name, message)
         self.log("Saving DB...")
