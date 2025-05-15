@@ -1,5 +1,4 @@
 import sqlite3
-from rich import print
 
 
 class Database:
@@ -114,7 +113,6 @@ class Database:
             LIMIT 1
         """, (channel_id,))
         server = self.cur.fetchone()
-        print(server, channel_id)
         return server
 
     def get_user_by_name(self, username: str):
