@@ -81,7 +81,7 @@ class Server:
         sender_name: str = sender_info["username"]
         sender_uuid: str = sender_info["uuid"]
 
-        if sender_name.strip() == "":
+        if sender_name.strip() == "" or len(sender_name) > 25:
             sender_conn.send(pickle.dumps(Packet(
                 PacketType.NOTIFICATION,
                 "You can't send messages because your username is invalid."
