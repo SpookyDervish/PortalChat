@@ -81,6 +81,7 @@ class Server:
         sender_name: str = sender_info["username"]
         sender_uuid: str = sender_info["uuid"]
 
+        print(sender_name.strip() == "", len(sender_name) > 25)
         if sender_name.strip() == "" or len(sender_name) > 25: # invalid username
             return 
 
