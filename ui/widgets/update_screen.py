@@ -64,12 +64,13 @@ class UpdateScreen(ModalScreen):
 
     @work(thread=True)
     def update(self):
+        # pull new changes
         origin = self.repo.remotes.origin
         origin.pull()
 
-        #subprocess.Popen([sys.executable] + sys.argv)
-        os.execv(__file__, sys.argv)
-        sys.exit(0)
+        # restart the script
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
 
     def has_unstaged_changes(self):
         # Files modified but not yet staged
