@@ -24,7 +24,7 @@ class Database:
         # each user has a username which can't be null
         self.cur.execute('''
         CREATE TABLE IF NOT EXISTS users (
-            user_id INTEGER PRIMARY KEY,
+            user_uuid TEXT PRIMARY KEY,
             username TEXT NOT NULL
         );
         ''')
@@ -33,10 +33,10 @@ class Database:
         # each membership links a user id to a server id
         self.cur.execute('''
         CREATE TABLE IF NOT EXISTS memberships (
-            user_id INTEGER,
+            user_uuid TEXT,
             server_id INTEGER,
-            PRIMARY KEY (user_id, server_id),
-            FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+            PRIMARY KEY (user_uuid, server_id),
+            FOREIGN KEY (user_uuid) REFERENCES users(user_uuid) ON DELETE CASCADE,
             FOREIGN KEY (server_id) REFERENCES servers(server_id) ON DELETE CASCADE
         );
         ''')
@@ -68,9 +68,9 @@ class Database:
             message_id INTEGER PRIMARY KEY AUTOINCREMENT,
             content TEXT NOT NULL,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-            user_id INTEGER,
+            user_uuid TEXT,
             channel_id INTEGER,
-            FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL,
+            FOREIGN KEY (user_uuid) REFERENCES users(user_uuid) ON DELETE SET NULL,
             FOREIGN KEY (channel_id) REFERENCES channels(channel_id) ON DELETE CASCADE
         );
         ''')
@@ -94,6 +94,12 @@ class Database:
 
     def close(self):
         self.conn.close()
+
+    def update_username(self, member_id: id, new_username: str):
+        self.cur.execute("""
+            UPDATE members SET name = ?
+            WHERE member_id = ?
+        """, (new_username, member_id))
 
     def get_channel_name_by_id(self, channel_id: int):
         self.cur.execute("""
@@ -151,7 +157,7 @@ class Database:
         self.cur.execute("""
             SELECT m.message_id, m.content, m.timestamp, u.username
             FROM messages m
-            LEFT JOIN users u ON m.user_id = u.user_id
+            LEFT JOIN users u ON m.user_uuid = u.user_uuid
             WHERE m.channel_id = ?
             ORDER BY m.timestamp ASC
         """, (channel_id,))
@@ -182,22 +188,22 @@ class Database:
 
         return self.cur.lastrowid  # Return the new channel's ID
     
-    def create_message_in_channel(self, channel_id: int, user_id: int, content: str):
+    def create_message_in_channel(self, channel_id: int, user_uuid: int, content: str):
         # Check if the channel exists
         self.cur.execute("SELECT 1 FROM channels WHERE channel_id = ? LIMIT 1", (channel_id,))
         if self.cur.fetchone() is None:
             raise ValueError(f"Channel ID {channel_id} does not exist.")
 
         # Optional: check if user exists (or let NULL be inserted)
-        self.cur.execute("SELECT 1 FROM users WHERE user_id = ? LIMIT 1", (user_id,))
+        self.cur.execute("SELECT 1 FROM users WHERE user_uuid = ? LIMIT 1", (user_uuid,))
         if self.cur.fetchone() is None:
-            raise ValueError(f"User ID {user_id} does not exist.")
+            raise ValueError(f"User ID {user_uuid} does not exist.")
 
         # Insert the message
         self.cur.execute("""
-            INSERT INTO messages (content, user_id, channel_id)
+            INSERT INTO messages (content, user_uuid, channel_id)
             VALUES (?, ?, ?)
-        """, (content, user_id, channel_id))
+        """, (content, user_uuid, channel_id))
 
         return self.cur.lastrowid  # Return the new message's ID
 
@@ -214,20 +220,20 @@ class Database:
             raise ValueError(f"A user with the name \"{user_name}\" already exists!")
 
         self.cur.execute("INSERT INTO users (username) VALUES (?)", (user_name,))
-        user_id = self.cur.lastrowid
-        return user_id
+        user_uuid = self.cur.lastrowid
+        return user_uuid
     
-    def add_user_to_server(self, user_id: int, server_id: int):
-        if self.is_user_in_server(user_id, server_id):
+    def add_user_to_server(self, user_uuid: int, server_id: int):
+        if self.is_user_in_server(user_uuid, server_id):
             return
 
         memberships = [
-            (user_id, server_id)
+            (user_uuid, server_id)
         ]
-        self.cur.executemany("INSERT INTO memberships (user_id, server_id) VALUES (?, ?)", memberships)
+        self.cur.executemany("INSERT INTO memberships (user_uuid, server_id) VALUES (?, ?)", memberships)
 
-    def user_exists(self, user_id: int):
-        self.cur.execute("SELECT 1 FROM users WHERE user_id = ? LIMIT 1", (user_id,))
+    def user_exists(self, user_uuid: int):
+        self.cur.execute("SELECT 1 FROM users WHERE user_uuid = ? LIMIT 1", (user_uuid,))
         return self.cur.fetchone() is not None
 
     def user_exists_by_name(self, username: str):
@@ -242,19 +248,19 @@ class Database:
         self.cur.execute("SELECT 1 FROM servers WHERE name = ? LIMIT 1", (name,))
         return self.cur.fetchone() is not None
 
-    def is_user_in_server(self, user_id: int, server_id: int):
+    def is_user_in_server(self, user_uuid: int, server_id: int):
         self.cur.execute("""
             SELECT 1 FROM memberships
-            WHERE user_id = ? AND server_id = ?
+            WHERE user_uuid = ? AND server_id = ?
             LIMIT 1
-        """, (user_id, server_id))
+        """, (user_uuid, server_id))
         return self.cur.fetchone() is not None
 
     def users_in_server(self, server_name: str):
         self.cur.execute("""
         SELECT u.username
         FROM users u
-        JOIN memberships m ON u.user_id = m.user_id
+        JOIN memberships m ON u.user_uuid = m.user_uuid
         JOIN servers s ON m.server_id = s.server_id
         WHERE s.name = ?
         """, (server_name,))
@@ -265,7 +271,7 @@ class Database:
         SELECT s.name
         FROM servers s
         JOIN memberships m ON s.server_id = m.server_id
-        JOIN users u ON m.user_id = u.user_id
+        JOIN users u ON m.user_uuid = u.user_uuid
         WHERE u.username = ?
         """, (user_name,))
         return [row[0] for row in self.cur.fetchall()]

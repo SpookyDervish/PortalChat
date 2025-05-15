@@ -4,6 +4,9 @@ from textual.css.query import NoMatches
 from textual import work
 from queue import Queue
 
+import uuid
+import os
+
 from ui.widgets.update_screen import UpdateScreen
 from ui.widgets.sidebar import ServerList, ChannelList
 from ui.widgets.welcome import Welcome
@@ -42,6 +45,15 @@ class Portal(App):
         return super().action_quit()
 
     def on_mount(self):
+        # generate unique user id
+        if not os.path.isfile("my_uuid.txt", "w"):
+            with open("my_id.txt", "w") as f:
+                f.write(str(uuid.uuid4()))
+
+        # get unique user id
+        with open("my_id.txt") as f:
+            self.user_id = f.read()
+
         self.is_open = True
         self.n = None
         self.channel_id = None
