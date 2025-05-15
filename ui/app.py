@@ -56,7 +56,7 @@ class Portal(App):
 
     def on_mount(self):
         # generate unique user id
-        if not os.path.isfile("my_uuid.txt"):
+        if not os.path.isfile("my_id.txt"):
             with open("my_id.txt", "w") as f:
                 f.write(str(uuid.uuid4()))
 
