@@ -4,6 +4,7 @@ from textual.widgets import Button, Rule
 
 from ui.widgets.add_server import AddServer
 from ui.widgets.settings_menu import SettingsScreen
+from ui.widgets.create_server_menu import CreateServerScreen
 
 
 class ChannelList(Tree):
@@ -50,7 +51,7 @@ class ServerList(Vertical):
         elif event.button.id == "settings-btn":
             self.app.push_screen(SettingsScreen())
         elif event.button.id == "start-server-btn":
-            self.app.notify("This button will be used to start a server via the UI in the future, however it isn't implemented at the moment. Came back later!", title="Sorry!", severity="warning")
+            self.app.push_screen(CreateServerScreen())
 
         if "server-btn" in event.button.classes:
             self.app.open_server(event.button.info)
