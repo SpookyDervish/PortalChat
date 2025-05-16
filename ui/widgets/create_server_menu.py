@@ -60,7 +60,7 @@ class CreateServerScreen(ModalScreen):
                 yield Input(placeholder="Enter a server title!")
 
             yield Label("Server Description:")
-            yield TextArea("the [bold yellow reverse]COOLEST[/bold yellow reverse] server", language="markup", id="desc-input")
+            yield TextArea("the [bold yellow reverse]COOLEST[/bold yellow reverse] server", language="xml", id="desc-input")
 
             with Horizontal():
                 yield Button("Cancel", id="cancel-button")
