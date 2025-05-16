@@ -1,7 +1,6 @@
 *.pyc
 __pycache__
-portal_server
-portal_server/*
+portal_server/
 start_server.py
 user_settings.ini
 my_id.txt
