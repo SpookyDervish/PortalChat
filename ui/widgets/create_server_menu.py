@@ -1,8 +1,9 @@
 from textual.screen import ModalScreen
 from textual.containers import Vertical, HorizontalGroup, Horizontal
 from textual.widgets import Label, Input, TextArea, Button
+from textual import work
 
-from server.server import Server
+from ui.widgets.server_view import ServerView
 
 
 DEFAULT_SERVER_DESCRIPTION = """
@@ -76,18 +77,27 @@ class CreateServerScreen(ModalScreen):
         if event.key == "escape":
             self.dismiss()
 
+    @work
+    async def start_server(self):
+        await self.app.mount(ServerView(
+            server_title=self.query_one("#title-input").value,
+            server_description=self.query_one("#desc-input").text
+        ))
+
     def on_button_pressed(self, event: Button.Pressed):
         if event.button.id == "cancel-button":
             self.dismiss()
         elif event.button.id == "create-button":
-            self.notify("W.I.P", severity="warning")
+            self.notify("Starting server!")
+            self.start_server()
+            self.dismiss()
 
     def compose(self):
         with Vertical(id="window") as window:
             window.border_title = "=== Start Server ==="
             with HorizontalGroup():
                 yield Label("Server title:")
-                yield Input("My Cool Server", placeholder="Enter a server title!")
+                yield Input("My Cool Server", placeholder="Enter a server title!", id="title-input")
 
             yield Label("Server Description:")
             yield TextArea(DEFAULT_SERVER_DESCRIPTION, id="desc-input")

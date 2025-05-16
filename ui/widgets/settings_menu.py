@@ -173,3 +173,6 @@ class SettingsScreen(ModalScreen):
 
                         with Right():
                             yield Button("Save", variant="primary", id="save")
+                with TabPane("Appearance"):
+                    yield Label("Appearance", classes="title", variant="primary")
+                    yield Rule()

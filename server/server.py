@@ -1,9 +1,11 @@
 import socket
 import pickle
-import sys
+import sys, os
 import traceback
 from _thread import start_new_thread
 from datetime import datetime
+
+from textual.widgets import RichLog
 
 from rich.traceback import install
 from rich.console import Console
@@ -15,9 +17,10 @@ console = Console()
 
 
 class Server:
-    def __init__(self, title: str, description: str = "", host: str = "", log_level: int = 1):
+    def __init__(self, title: str, description: str = "", host: str = "", log_level: int = 1, rich_log: RichLog = None, interactive: bool = False):
         install(console=console)
         self.log_level = log_level
+        self.rich_log = rich_log
         self.BLOCKED_IPS = []
 
         self.server_info = {
@@ -25,14 +28,21 @@ class Server:
             "description": description,
             "online": 0
         }
+        self.running = True
 
         self.log("Doing initial setup...", 1)
         self.clients: list[socket.socket] = []
         self.host = host
         self.port = 5555
 
+        # create needed folders
+        NEEDED_FOLDERS = ["portal_server", "portal_server/user_icons"]
+        for folder in NEEDED_FOLDERS:
+            if not os.path.isdir(folder):
+                os.mkdir(folder)
+
         self.log("Getting database...")
-        self.db = Database(self)
+        self.db = Database(self, "portal_server/db.db")
 
         self.log("Creating socket...", 1)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -50,14 +60,16 @@ class Server:
         self.log("Server is listening and ready to receive connections!")
         self.log(f"IP: [bold green]{self.get_ip()}[/bold green]")
 
-        self.log("Starting interactive terminal...", level=1)
-        start_new_thread(self.interactive_terminal, ())
+        if interactive:
+            self.log("Starting interactive terminal...", level=1)
+            start_new_thread(self.interactive_terminal, ())
 
         self.log("Starting main server accept loop...", level=1)
 
         # main server loop
-        while True:
+        while self.running:
             if self.sock.fileno() == -1: # the socket is closed
+                self.running = False
                 break
             
             try:
@@ -75,6 +87,14 @@ class Server:
 
             self.log(f"New connection! Address: {addr}")
             start_new_thread(self.handle_client, tuple([conn]))
+
+    def stop(self):
+        self.log("[bold red blink]Server is shutting down![/]")
+        self.running = False
+        self.log("Closing socket...", 1)
+        self.sock.close()
+        self.log("Disconnecting db...", 1)
+        self.db.close()
 
     def send_message(self, message: str, channel_id: int, sender_conn: socket.socket, sender_info: dict):
         """Send a message to all users and save the message to the DB."""
@@ -121,8 +141,7 @@ class Server:
             user_input = console.input("[bold green]>[/bold green] ")
 
             if user_input == "close":
-                self.log("[bold red blink]Server is shutting down![/]")
-                self.sock.close()
+                self.stop()
                 break
 
     def handle_packet(self, packet: Packet, conn: socket.socket):
@@ -252,6 +271,13 @@ class Server:
             final_message = f"[bold][[bright_red]ERROR[/bright_red]][/bold]     {message}"
 
         try:
-            console.print(final_message, highlight=False)
+            if self.rich_log:
+                self.rich_log.write(final_message)
+            else:
+                console.print(final_message, highlight=False)
         except:
-            console.print(final_message, highlight=False, markup=False)
+            if self.rich_log:
+                self.rich_log.write(final_message)
+            else:
+                console.print(final_message, highlight=False, markup=False)
+            

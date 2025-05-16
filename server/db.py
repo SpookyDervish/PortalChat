@@ -2,11 +2,11 @@ import sqlite3
 
 
 class Database:
-    def __init__(self, server):
+    def __init__(self, server, db_path: str = "portal_db.db"):
         self.server = server
 
         # ! Disabling check_same_thread fixes a lot of issues, but corruption could be a REALLY big problem, might need to check this.
-        self.conn = sqlite3.connect("portal_db.db", check_same_thread=False)
+        self.conn = sqlite3.connect(db_path, check_same_thread=False)
         self.cur = self.conn.cursor()
 
         # Create a table for servers
