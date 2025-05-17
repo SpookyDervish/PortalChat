@@ -25,6 +25,18 @@ class ChannelList(Tree):
     def __init__(self):
         super().__init__("Channels", id="channels")
 
+class MemberList(Tree):
+    DEFAULT_CSS = """
+    MemberList {
+        dock: right;
+        max-width: 25;
+        margin-left: 10;
+    }
+    """
+
+    def __init__(self):
+        super().__init__("👥 Members", id="members")
+
 class ServerList(Vertical):
     DEFAULT_CSS = """
     ServerList {

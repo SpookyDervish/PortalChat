@@ -9,7 +9,7 @@ import os
 import configparser
 
 from ui.widgets.update_screen import UpdateScreen
-from ui.widgets.sidebar import ServerList, ChannelList
+from ui.widgets.sidebar import ServerList, ChannelList, MemberList
 from ui.widgets.welcome import Welcome
 from ui.widgets.chat import Chat, Message
 from ui.widgets.message_box import ChatArea
@@ -32,6 +32,7 @@ class Portal(App):
         yield Chat()
         yield Welcome()
         yield ChatArea()
+        yield MemberList()
 
     def action_quit(self):
         self.is_open = False
@@ -76,6 +77,7 @@ class Portal(App):
         self.query_one(Chat).styles.display = "none"
         self.query_one(ChannelList).styles.display = "none"
         self.query_one(ChatArea).display = "none"
+        self.query_one(MemberList).display = "none"
         self.ping_loop_worker = None
         self.packet_handler_worker = None
         self.packet_queue: Queue[Packet] = Queue()
@@ -233,12 +235,14 @@ class Portal(App):
         chat_area = self.query_one(ChatArea) # message box
         channel_list = self.query_one(ChannelList)
         welcome = self.query_one(Welcome)
+        member_list = self.query_one(MemberList)
 
         if server_info == None: # go back to welcome screen
             welcome.display = "block"
             chat.display = "none"
             chat_area.display = 'none'
             channel_list.display = "none"
+            member_list.display = "none"
 
             try:
                 overview = self.query_one(ServerOverview)
@@ -259,6 +263,7 @@ class Portal(App):
         channel_list.styles.display = "block"
         channel_list.root.set_label("🌀 [bold red]" + server_info[0] + "[/]")
         welcome.styles.display = "none"
+        member_list.display = "block"
 
         channel_list.select_node(channel_list.root)
         self.ping_loop_worker = self.ping_loop()

@@ -34,11 +34,3 @@ def command(name: str):
         command_registry[name] = wrapper
         return wrapper
     return decorator
-
-@command(name="test command", description="yes yes yes")
-def test_command():
-    print('func')
-
-
-if __name__ == "__main__":
-    test_command()
