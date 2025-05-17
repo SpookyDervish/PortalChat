@@ -209,6 +209,7 @@ class Server:
                     self.log(f"Receive: {data}", 1)
 
                 if data.packet_type == PacketType.DISCONNECT:
+                    self.log("Client disconnected via packet.", 1)
                     break
 
                 reply = self.handle_packet(data, conn)
