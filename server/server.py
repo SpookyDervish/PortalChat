@@ -213,11 +213,9 @@ class Server:
                     break
 
                 reply = self.handle_packet(data, conn)
+                self.log(f"Send   : {reply}", 1)
 
                 if reply != None:
-                    if reply.packet_type != PacketType.PING:
-                        self.log(f"Send   : {reply}", 1)
-
                     conn.sendall(pickle.dumps(reply))
             except (socket.error, EOFError) as e:
                 self.log(f"A client created a socket error. The connection will be closed.\n\t- Client: {conn.getsockname()}\n\t- Error: {e}", 3)
