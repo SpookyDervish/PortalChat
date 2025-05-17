@@ -2,6 +2,8 @@ from textual.containers import Vertical, HorizontalGroup
 from textual.widgets import RichLog, Button
 from textual import work
 
+from multiprocessing import Process
+
 from server.server import Server
 
 
@@ -29,6 +31,15 @@ class ServerView(Vertical):
         self.server_title = server_title
         self.server_description = server_description
         self.server = None
+
+        self.console_log = RichLog(markup=True, id="log", wrap=True)
+
+        self.server = Server(
+            title=self.server_title,
+            description=self.server_description,
+            log_level=1,
+            rich_log = self.console_log
+        )
         super().__init__()
 
     def on_key(self, event):
@@ -37,10 +48,6 @@ class ServerView(Vertical):
                 self.notify("Stopping server...")
                 self.server.stop()
             self.remove()
-
-    @work(thread=True, name="server-thread")
-    def server_thread(self):
-        self.server.start()
 
     def on_button_pressed(self, event):
         if event.button.id == "stop-btn":
@@ -51,17 +58,11 @@ class ServerView(Vertical):
                 self.notify("Server is already stopped! Press <ESC> on your keyboard to close the server view.")
 
     def on_mount(self):
-        self.server = Server(
-            title=self.server_title,
-            description=self.server_description,
-            log_level=1,
-            rich_log = self.console_log
-        )
-        self.server_thread()
+        self.server.start()
+
         self.server.log("[bold blue]Portal Server View:[/bold blue] Press <ESC> on your keyboard to close the server view, but be careful, [b]this will also shut down the server![/b]")
 
     def compose(self):
-        self.console_log = RichLog(markup=True, id="log", wrap=True)
         yield self.console_log
 
         with HorizontalGroup(id="server-controls"):

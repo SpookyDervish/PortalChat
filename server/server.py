@@ -41,11 +41,7 @@ class Server:
         for folder in NEEDED_FOLDERS:
             if not os.path.isdir(folder):
                 os.mkdir(folder)
-    
-    def __str__(self):
-        return f"<{self.server_info['title']}>"
 
-    def start(self):
         self.log("Getting database...")
         self.db = Database(self, "portal_server/db.db")
 
@@ -70,7 +66,11 @@ class Server:
             start_new_thread(self.interactive_terminal, ())
 
         self.log("Starting main server accept loop...", level=1)
+    
+    def __str__(self):
+        return f"<{self.server_info['title']}>"
 
+    def start(self):
         # main server loop
         while self.running:
             if self.sock.fileno() == -1: # the socket is closed
@@ -134,11 +134,9 @@ class Server:
             )
 
         for user in self.clients:
-            #if user == sender_conn: continue
-
             self.log(f"Sending packet to {user}: {packet}", 1)
-
             user.send(pickle.dumps(packet))
+
         return True
 
     def interactive_terminal(self):
@@ -205,7 +203,6 @@ class Server:
 
         while True:
             try:
-                self.log("RECV", 1)
                 data = pickle.loads(conn.recv(2048))
                 if not isinstance(data, Packet):
                     break

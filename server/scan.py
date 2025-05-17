@@ -69,13 +69,9 @@ def scan_ip(ip):
             sock.send(pickle.dumps(Packet(PacketType.GET, {"type": "INFO"})))
             response = pickle.loads(sock.recv(2048))
 
-            return {"data": {"title": str(response.data), "online": 0}, "ip": str(ip)}
-
             sock.send(pickle.dumps(Packet(PacketType.DISCONNECT,None)))
             sock.close()
-
             
-
             data = response.data
             data["ip"] = str(ip)
 
