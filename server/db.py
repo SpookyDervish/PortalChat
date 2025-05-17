@@ -75,6 +75,40 @@ class Database:
             FOREIGN KEY (channel_id) REFERENCES channels(channel_id) ON DELETE CASCADE
         );
         ''')
+
+        # create a table of roles
+        # each role has an id, which is the primary key
+        # a name, which is text and can't be null
+        # a rank, which tells the role if it is higher or lower than another role
+        # and a list of permissions, either being 1 or 0 for True and False
+        self.cur.execute('''
+        CREATE TABLE IF NOT EXISTS roles (
+            role_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            rank INTEGER NOT NULL CHECK (rank >= 0 AND rank <= 255),
+            send_messages INTEGER DEFAULT 1,
+            view_message_history INTEGER DEFAULT 1,
+            mute_members INTEGER DEFAULT 0,
+            kick_members INTEGER DEFAULT 0,
+            ban_members INTEGER DEFAULT 0,
+            manage_channels INTEGER DEFAULT 0,
+            manage_server INTEGER DEFAULT 0,
+            super_admin INTEGER DEFAULT 0
+        );
+        ''')
+
+        # create a table of all the roles each user has
+        self.cur.execute('''
+        CREATE TABLE IF NOT EXISTS user_roles (
+            user_uuid TEXT,
+            role_id INTEGER,
+            server_id INTEGER,
+            PRIMARY KEY (user_uuid, role_id, server_id),
+            FOREIGN KEY (user_uuid) REFERENCES users(user_uuid) ON DELETE CASCADE,
+            FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE CASCADE,
+            FOREIGN KEY (server_id) REFERENCES servers(server_id) ON DELETE CASCADE
+        );
+        ''')
         self.commit()
 
         server_id = self.get_server_by_name(self.server.server_info["title"])
@@ -92,6 +126,68 @@ class Database:
 
     def close(self):
         self.conn.close()
+
+    def create_role(self, name: str, rank: int, permissions: dict[str, bool]):
+        self.cur.execute('''
+            INSERT INTO roles (name, rank,
+                send_messages, view_message_history, mute_members,
+                kick_members, ban_members, manage_channels, manage_server
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            name, rank,
+            int(permissions.get("send_messages", 0)),
+            int(permissions.get("view_message_history", 0)),
+            int(permissions.get("mute_members", 0)),
+            int(permissions.get("kick_members", 0)),
+            int(permissions.get("ban_members", 0)),
+            int(permissions.get("manage_channels", 0)),
+            int(permissions.get("manage_server", 0))
+        ))
+        self.conn.commit()
+
+    def assign_role_to_user(self, user_uuid: str, role_id: int, server_id: int):
+        self.cur.execute('''
+            INSERT OR IGNORE INTO user_roles (user_uuid, role_id, server_id)
+            VALUES (?, ?, ?)
+        ''', (user_uuid, role_id, server_id))
+        self.conn.commit()
+
+    def get_roles_for_user_in_server(self, user_uuid: str, server_id: int):
+        self.cur.execute('''
+            SELECT r.* FROM roles r
+            JOIN user_roles ur ON r.role_id = ur.role_id
+            WHERE ur.user_uuid = ? AND ur.server_id = ?
+        ''', (user_uuid, server_id))
+        return self.cur.fetchall()
+    
+    def get_role_by_name(self, name: str):
+        self.cur.execute("SELECT * FROM roles WHERE name = ? LIMIT 1", (name,))
+        return self.cur.fetchone()
+    
+    def can_user(self, user_uuid: str, server_id: int, permission: str) -> bool:
+        # Sanity check: permission must be a valid column in `roles`
+        valid_permissions = {
+            "send_messages",
+            "view_message_history",
+            "mute_members",
+            "kick_members",
+            "ban_members",
+            "manage_channels",
+            "manage_server",
+            "super_admin"
+        }
+        if permission not in valid_permissions:
+            raise ValueError(f"Invalid permission: {permission}")
+        
+        query = f'''
+            SELECT MAX(r.{permission}) FROM roles r
+            JOIN user_roles ur ON r.role_id = ur.role_id
+            WHERE ur.user_uuid = ? AND ur.server_id = ?
+        '''
+        self.cur.execute(query, (user_uuid, server_id))
+        result = self.cur.fetchone()
+
+        return result and result[0] == 1
 
     def update_username(self, uuid: id, new_username: str):
         self.cur.execute("""
