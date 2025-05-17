@@ -41,6 +41,9 @@ class Server:
         for folder in NEEDED_FOLDERS:
             if not os.path.isdir(folder):
                 os.mkdir(folder)
+    
+    def __str__(self):
+        return f"<{self.server_info['title']}>"
 
     def start(self):
         self.log("Getting database...")
