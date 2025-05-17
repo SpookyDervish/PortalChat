@@ -32,7 +32,7 @@ Styles:
 Some combined styles:
 [bold underline]This text is bold, AND has an underline![/bold underline]
 
-[bold black on yellow blink]This text is bold, will blink, its background colour is yellow, and its foreground colour is black![/bold black on yellow]
+[bold black on yellow blink]This text is bold, will blink, its background colour is yellow, and its foreground colour is black![/bold black on yellow blink]
 """
 
 

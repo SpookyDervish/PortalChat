@@ -44,7 +44,11 @@ class Server:
 
         self.log("Getting database...")
         self.db = Database(self, "portal_server/db.db")
+    
+    def __str__(self):
+        return f"<{self.server_info['title']}>"
 
+    def start(self):
         self.log("Creating socket...", 1)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.log("Attempting to bind socket..", level=1)
@@ -66,11 +70,7 @@ class Server:
             start_new_thread(self.interactive_terminal, ())
 
         self.log("Starting main server accept loop...", level=1)
-    
-    def __str__(self):
-        return f"<{self.server_info['title']}>"
 
-    def start(self):
         # main server loop
         while self.running:
             if self.sock.fileno() == -1: # the socket is closed
@@ -149,7 +149,7 @@ class Server:
 
     def handle_packet(self, packet: Packet, conn: socket.socket):
         reply = None
-
+        
         try:
             if packet.packet_type == PacketType.WAIT:
                 reply = None

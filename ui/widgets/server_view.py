@@ -2,9 +2,8 @@ from textual.containers import Vertical, HorizontalGroup
 from textual.widgets import RichLog, Button
 from textual import work
 
-from multiprocessing import Process
-
 from server.server import Server
+from threading import Thread
 
 
 class ServerView(Vertical):
@@ -38,7 +37,8 @@ class ServerView(Vertical):
             title=self.server_title,
             description=self.server_description,
             log_level=1,
-            rich_log = self.console_log
+            rich_log = self.console_log,
+            interactive=False
         )
         super().__init__()
 
@@ -58,7 +58,8 @@ class ServerView(Vertical):
                 self.notify("Server is already stopped! Press <ESC> on your keyboard to close the server view.")
 
     def on_mount(self):
-        self.server.start()
+        self.server_thread = Thread(target=self.server.start)
+        self.server_thread.start()
 
         self.server.log("[bold blue]Portal Server View:[/bold blue] Press <ESC> on your keyboard to close the server view, but be careful, [b]this will also shut down the server![/b]")
 

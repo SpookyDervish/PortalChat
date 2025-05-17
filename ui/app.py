@@ -18,6 +18,7 @@ from ui.widgets.server_overview import ServerOverview
 from server.network import Network
 from server.packet import Packet, PacketType
 
+
 class Portal(App):
     DEFAULT_CSS = """
     .start-rule {
