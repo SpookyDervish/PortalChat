@@ -205,6 +205,7 @@ class Server:
 
         while True:
             try:
+                self.log("RECV", 1)
                 data = pickle.loads(conn.recv(2048))
                 if not isinstance(data, Packet):
                     break
@@ -216,6 +217,7 @@ class Server:
                     break
 
                 reply = self.handle_packet(data, conn)
+
                 self.log(f"Send   : {reply}", 1)
 
                 if reply != None:
