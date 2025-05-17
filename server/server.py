@@ -21,6 +21,7 @@ class Server:
         install(console=console)
         self.log_level = log_level
         self.rich_log = rich_log
+        self.interactive = interactive
         self.BLOCKED_IPS = []
 
         self.server_info = {
@@ -41,6 +42,7 @@ class Server:
             if not os.path.isdir(folder):
                 os.mkdir(folder)
 
+    def start(self):
         self.log("Getting database...")
         self.db = Database(self, "portal_server/db.db")
 
@@ -60,7 +62,7 @@ class Server:
         self.log("Server is listening and ready to receive connections!")
         self.log(f"IP: [bold green]{self.get_ip()}[/bold green]")
 
-        if interactive:
+        if self.interactive:
             self.log("Starting interactive terminal...", level=1)
             start_new_thread(self.interactive_terminal, ())
 
@@ -74,7 +76,7 @@ class Server:
             
             try:
                 conn, addr = self.sock.accept()
-            except ConnectionAbortedError: # socket was closed by server owner
+            except (ConnectionAbortedError, OSError): # socket was closed by server owner
                 break
 
             if addr[0] in self.BLOCKED_IPS:

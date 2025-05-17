@@ -1,10 +1,12 @@
 from textual.containers import VerticalScroll, Vertical
 from textual.widgets import Tree
 from textual.widgets import Button, Rule
+from textual.css.query import NoMatches
 
 from ui.widgets.add_server import AddServer
 from ui.widgets.settings_menu import SettingsScreen
 from ui.widgets.create_server_menu import CreateServerScreen
+from ui.widgets.server_view import ServerView
 
 
 class ChannelList(Tree):
@@ -51,6 +53,13 @@ class ServerList(Vertical):
         elif event.button.id == "settings-btn":
             self.app.push_screen(SettingsScreen())
         elif event.button.id == "start-server-btn":
+            try:
+                self.app.query_one(ServerView)
+                self.notify("You already have a server view open!")
+                return
+            except NoMatches:
+                pass
+
             self.app.push_screen(CreateServerScreen())
 
         if "server-btn" in event.button.classes:

@@ -31,25 +31,37 @@ class ServerView(Vertical):
         self.server = None
         super().__init__()
 
+    def on_key(self, event):
+        if event.key == "escape":
+            if self.server.running:
+                self.notify("Stopping server...")
+                self.server.stop()
+            self.remove()
+
     @work(thread=True, name="server-thread")
     def server_thread(self):
-        self.server = Server(
-            title=self.server_title,
-            description=self.server_description,
-            log_level=2,
-            rich_log = self.console_log
-        )
-        self.server.log("Press <ESC> on your keyboard to close the server view. Be mindful, [b]this will also shut down the server![/b]")
+        self.server.start()
 
     def on_button_pressed(self, event):
         if event.button.id == "stop-btn":
-            self.server.stop()
+            if self.server.running:
+                self.notify("Stopping server...")
+                self.server.stop()
+            else:
+                self.notify("Server is already stopped! Press <ESC> on your keyboard to close the server view.")
 
     def on_mount(self):
+        self.server = Server(
+            title=self.server_title,
+            description=self.server_description,
+            log_level=1,
+            rich_log = self.console_log
+        )
         self.server_thread()
+        self.server.log("[bold blue]Portal Server View:[/bold blue] Press <ESC> on your keyboard to close the server view, but be careful, [b]this will also shut down the server![/b]")
 
     def compose(self):
-        self.console_log = RichLog(markup=True, id="log")
+        self.console_log = RichLog(markup=True, id="log", wrap=True)
         yield self.console_log
 
         with HorizontalGroup(id="server-controls"):
