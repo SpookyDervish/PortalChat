@@ -109,7 +109,6 @@ class Database:
             FOREIGN KEY (server_id) REFERENCES servers(server_id) ON DELETE CASCADE
         );
         ''')
-        self.commit()
 
         server_id = self.get_server_by_name(self.server.server_info["title"])
         if not server_id:
@@ -120,6 +119,8 @@ class Database:
         channel_id = self.get_channel_by_name(server_id, "general")
         if not channel_id:
             channel_id = self.create_channel_in_server(server_id, "general")
+            
+        self.commit()
 
     def commit(self):
         self.conn.commit()
