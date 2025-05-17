@@ -62,8 +62,6 @@ class AddServer(ModalScreen):
         local_ip, netmash = get_subnet()
         for server in scan_network(get_subnet_network(local_ip, netmash)):
             # we minus 1 from the online count otherwise it includes ourselves
-            self.notify(str(server), markup=False)
-
             try:
                 to_content(server["data"]["title"])
             except MarkupError:

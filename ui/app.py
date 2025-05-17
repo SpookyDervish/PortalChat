@@ -26,6 +26,7 @@ class Portal(App):
     }
     """
     
+    ENABLE_COMMAND_PALETTE = False
 
     def compose(self) -> ComposeResult:
         yield ServerList(id="sidebar")
@@ -51,6 +52,10 @@ class Portal(App):
         self.config["MyAccount"] = {
             "username": "user",
             "icon_path": os.path.abspath("assets/images/default_user.png")
+        }
+        self.config["Appearance"] = {
+            "theme_index": 0,
+            "theme": "textual-dark"
         }
         with open('user_settings.ini', "w") as config_file:
             self.config.write(config_file)

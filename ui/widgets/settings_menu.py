@@ -1,6 +1,6 @@
 from textual.screen import ModalScreen
 from textual.containers import Vertical, Horizontal, Container, Center, Right
-from textual.widgets import Label, Button, Input, Rule, TabbedContent, TabPane
+from textual.widgets import Label, Button, Input, Rule, TabbedContent, TabPane, Select
 
 from ui.widgets.image import Image
 
@@ -93,6 +93,18 @@ class SettingsScreen(ModalScreen):
         Right {
             dock: bottom;
         }
+
+        .settings-grid {
+            layout: grid;
+            grid-size: 2 1;
+            padding: 1;
+
+            Label {
+                height: 3;
+                width: 1fr;
+                content-align: left middle;
+            }
+        }
     }
     """
 
@@ -113,6 +125,17 @@ class SettingsScreen(ModalScreen):
     def on_key(self, event):
         if event.key == "escape":
             self.dismiss()
+
+    def on_select_changed(self, event: Select.Changed):
+        select = event.select
+
+        if select.id == "theme-select":
+            chosen_theme = select._options[event.value][0]
+            self.config["Appearance"]["theme"] = chosen_theme
+            self.config["Appearance"]["theme_index"] = str(event.value)
+            self.app.theme = chosen_theme
+
+            self.save_settings()
 
     def on_button_pressed(self, event):
         button: Button = event.button
@@ -174,5 +197,14 @@ class SettingsScreen(ModalScreen):
                         with Right():
                             yield Button("Save", variant="primary", id="save")
                 with TabPane("Appearance"):
-                    yield Label("Appearance", classes="title", variant="primary")
+                    yield Label("Appearance", classes="title", variant="success")
                     yield Rule()
+
+                    with Vertical(classes="settings-grid"):
+                        yield Label("Colour Theme:")
+                        yield Select(
+                            options=[(theme,i) for i, theme in enumerate(self.app._registered_themes.keys())],
+                            allow_blank=False,
+                            id="theme-select",
+                            value=int(self.config.get("Appearance", "theme_index"))
+                        )

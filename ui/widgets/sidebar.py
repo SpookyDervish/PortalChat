@@ -80,6 +80,6 @@ class ServerList(Vertical):
     def compose(self):
         yield VerticalScroll(id="icons")
         yield Rule()
-        yield Button("▶", variant="success", id="start-server-btn", classes="side-btn")
-        yield Button("+", variant="primary", id="add-server-btn", classes="side-btn")
-        yield Button("⚙", id="settings-btn", classes="side-btn")
+        yield Button("▶", variant="success", id="start-server-btn", classes="side-btn", tooltip="Create your own server!")
+        yield Button("+", variant="primary", id="add-server-btn", classes="side-btn", tooltip="Join a server.")
+        yield Button("⚙", id="settings-btn", classes="side-btn", tooltip="Change your local settings.")
