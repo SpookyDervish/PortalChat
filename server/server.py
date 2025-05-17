@@ -201,7 +201,7 @@ class Server:
 
         conn.send(pickle.dumps(Packet(PacketType.CONNECTION_STARTED, None)))
 
-        while True:
+        while self.running:
             try:
                 data = pickle.loads(conn.recv(2048))
                 if not isinstance(data, Packet):
