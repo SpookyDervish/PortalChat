@@ -125,13 +125,13 @@ class Database:
             
         self.commit()
 
-    def commit(self):
+    def commit(self) -> None:
         self.conn.commit()
 
-    def close(self):
+    def close(self) -> None:
         self.conn.close()
 
-    def create_role(self, name: str, rank: int, permissions: dict[str, bool]):
+    def create_role(self, name: str, rank: int, permissions: dict[str, bool]) -> int:
         self.cur.execute('''
             INSERT INTO roles (name, rank,
                 send_messages, view_message_history, mute_members,
@@ -150,8 +150,9 @@ class Database:
             int(permissions.get("super_admin", 0))
         ))
         self.commit()
+        return self.cur.lastrowid
 
-    def assign_role_to_user(self, user_uuid: str, role_id: int, server_id: int):
+    def assign_role_to_user(self, user_uuid: str, role_id: int, server_id: int) -> None:
         self.cur.execute('''
             INSERT OR IGNORE INTO user_roles (user_uuid, role_id, server_id)
             VALUES (?, ?, ?)
@@ -195,13 +196,13 @@ class Database:
 
         return result and result[0] == 1
 
-    def update_username(self, uuid: id, new_username: str):
+    def update_username(self, uuid: id, new_username: str) -> None:
         self.cur.execute("""
             UPDATE users SET username = ?
             WHERE user_uuid = ?
         """, (new_username, uuid))
 
-    def get_channel_name_by_id(self, channel_id: int):
+    def get_channel_name_by_id(self, channel_id: int) -> str:
         self.cur.execute("""
             SELECT name FROM channels
             WHERE channel_id = ?
@@ -277,6 +278,14 @@ class Database:
             WHERE server_id = ? AND name = ?
             LIMIT 1
         """, (server_id, channel_name))
+        return self.cur.fetchone()
+    
+    def get_channel(self, server_id: int, channel_id: int):
+        self.cur.execute("""
+            SELECT * FROM channels
+            WHERE server_id = ? AND channel_id = ?
+            LIMIT 1
+        """, (server_id, channel_id))
         return self.cur.fetchone()
     
     def create_channel_in_server(self, server_id: int, channel_name: str):

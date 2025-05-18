@@ -172,8 +172,8 @@ class Server:
                         reply = Packet(PacketType.DATA, {"data": {"messages": messages, "channel_name": server[1]}, "type": "SERVER_MSGS"})
                 elif packet.data["type"] == "MEMBERS":
                     channel_id = packet.data["channel_id"]
-
-                    channel = self.db.get_channel_name_by_id(channel_id)
+                    channel = self.db.get_channel(self.db.get_server_from_channel(channel_id), channel_id)
+                    
                     self.log(channel)
 
                     reply = Packet(PacketType.DATA, {"data": None, "type": "SERVER_MEMBERS"})
