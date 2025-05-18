@@ -34,8 +34,8 @@ def to_bytes(packet: Packet):
     packet.packet_type = packet_type
 
     # ensure timestamps are converted to strings to avoid issues
-    if packet.data.get("timestamp"):
-        packet.data["timestamp"] = datetime.strptime(packet.data["timestamp"], "%Y-%m-%d %H:%M:%S")
+    if packet.data and packet.data.get("timestamp"):
+        packet.data["timestamp"] = datetime.strftime(packet.data["timestamp"], "%Y-%m-%d %H:%M:%S")
 
     # return the bytes of the packet
     return msgpack.packb(asdict(packet))
