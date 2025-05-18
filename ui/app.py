@@ -113,10 +113,10 @@ class Portal(App):
             self.channel_id = data
 
             # Get messages in the selected channel
-            self.packet_queue.put(self.n.send(Packet(PacketType.GET, {"type": "MESSAGES", "channel_id": self.channel_id}, tag="servr-msgs")))
+            self.packet_queue.put(self.n.send(Packet(PacketType.GET, {"type": "MESSAGES", "channel_id": self.channel_id}, tag="servr-msgs"), False))
 
             # Update member list
-            self.packet_queue.put(self.n.send(Packet(PacketType.GET, {"type": "MEMBERS", "channel_id": self.channel_id}, tag="servr-members")))
+            self.packet_queue.put(self.n.send(Packet(PacketType.GET, {"type": "MEMBERS", "channel_id": self.channel_id}, tag="servr-members"), False))
         
         
 

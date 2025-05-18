@@ -44,7 +44,7 @@ class Network:
     def connect(self):
         self.client.connect(self.addr)
         
-    def send(self, data) -> Packet:
+    def send(self, data, blocking: bool = True) -> Packet:
 
         self.client.send(pickle.dumps(data))
-        return self.recv(True)
+        return self.recv(blocking)
