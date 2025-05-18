@@ -161,8 +161,6 @@ class Portal(App):
 
             if packet == None: continue
 
-            self.notify(str(packet), markup=False)
-
             self.app.log(f"Got packet from queue: {packet}")
             if packet.packet_type == PacketType.MESSAGE_RECV:
                 self.app.log("Calling mount_msgs from the mian thread...")
