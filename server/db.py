@@ -157,6 +157,7 @@ class Database:
             INSERT OR IGNORE INTO user_roles (user_uuid, role_id, server_id)
             VALUES (?, ?, ?)
         ''', (user_uuid, role_id, server_id))
+        self.server.log(f"Gave {user_uuid} role {role_id} in server {server_id}")
         self.commit()
 
     def get_roles_for_user_in_server(self, user_uuid: str, server_id: int):
@@ -166,6 +167,28 @@ class Database:
             WHERE ur.user_uuid = ? AND ur.server_id = ?
         ''', (user_uuid, server_id))
         return self.cur.fetchall()
+    
+    def get_roles_with_users_in_server(self, server_id: int) -> list[tuple[str, tuple[str]]]:
+        # Get all roles in the server and users with those roles
+        self.cur.execute('''
+            SELECT r.name, u.username
+            FROM roles r
+            JOIN user_roles ur ON r.role_id = ur.role_id
+            JOIN users u ON ur.user_uuid = u.user_uuid
+            WHERE ur.server_id = ?
+            ORDER BY r.rank DESC, r.name ASC
+        ''', (server_id,))
+
+        rows = self.cur.fetchall()
+
+        # Organize into {role_name: [usernames]}
+        from collections import defaultdict
+        role_map = defaultdict(list)
+        for role_name, username in rows:
+            role_map[role_name].append(username)
+
+        # Return as list of tuples
+        return list(role_map.items())
     
     def get_role_by_name(self, name: str):
         self.cur.execute("SELECT * FROM roles WHERE name = ? LIMIT 1", (name,))
@@ -338,20 +361,25 @@ class Database:
     def create_user(self, user_name: str, uuid: str):
         if self.user_exists(uuid):
             raise ValueError(f"A user with the name \"{user_name}\" already exists!")
+        self.server.log(f"Creating user \"{user_name}\" with UUID \"{uuid}\"", 1)
 
         self.cur.execute("INSERT INTO users (user_uuid, username) VALUES (?, ?)", (uuid,user_name))
         user_uuid = self.cur.lastrowid
         self.commit()
+        self.add_user_to_server(uuid, 1)
         return user_uuid
     
     def add_user_to_server(self, user_uuid: str, server_id: int):
         if self.is_user_in_server(user_uuid, server_id):
-            return
+            raise ValueError("User is already in that server!")
+        self.server.log(f"Adding user {user_uuid} to server {server_id}.", 1)
 
         memberships = [
             (user_uuid, server_id)
         ]
-        self.cur.executemany("INSERT INTO memberships (user_uuid, server_id) VALUES (?, ?)", memberships)
+        result = self.cur.executemany("INSERT INTO memberships (user_uuid, server_id) VALUES (?, ?)", memberships)
+        self.assign_role_to_user(user_uuid, 1, server_id)
+        return result
 
     def user_exists(self, user_uuid: str):
         self.cur.execute("SELECT 1 FROM users WHERE user_uuid = ? LIMIT 1", (user_uuid,))
@@ -394,7 +422,7 @@ class Database:
             JOIN memberships m ON u.user_uuid = m.user_uuid
             WHERE m.server_id = ?
         """, (server_id,))
-        return [row[0] for row in self.cur.fetchall()]
+        return [row for row in self.cur.fetchall()]
     
     def servers_with_user(self, user_name: str):
         self.cur.execute("""

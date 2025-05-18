@@ -172,11 +172,16 @@ class Server:
                         reply = Packet(PacketType.DATA, {"data": {"messages": messages, "channel_name": server[1]}, "type": "SERVER_MSGS"})
                 elif packet.data["type"] == "MEMBERS":
                     channel_id = packet.data["channel_id"]
-                    channel = self.db.get_channel(self.db.get_server_from_channel(channel_id), channel_id)
-                    
-                    self.log(channel)
+                    server = self.db.get_server_from_channel(channel_id)
 
-                    reply = Packet(PacketType.DATA, {"data": None, "type": "SERVER_MEMBERS"})
+                    if not server:
+                        return Packet(PacketType.ERROR, "Channel does not exist!", tag=packet.tag)
+                    
+                    server_id = server[0]
+                    
+                    channel = self.db.get_channel(server_id, channel_id)
+
+                    reply = Packet(PacketType.DATA, {"data": self.db.get_roles_with_users_in_server(server_id), "type": "SERVER_MEMBERS"})
                     
                 else:
                     reply = Packet(PacketType.ERROR, "Invalid GET type!")

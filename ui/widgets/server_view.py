@@ -1,4 +1,4 @@
-from textual.containers import Vertical, HorizontalGroup
+from textual.containers import VerticalGroup, HorizontalGroup
 from textual.widgets import RichLog, Button
 from textual import work
 
@@ -6,12 +6,13 @@ from server.server import Server
 from threading import Thread
 
 
-class ServerView(Vertical):
+class ServerView(VerticalGroup):
     DEFAULT_CSS = """
     ServerView {
         dock: right;
         border: tall $background-lighten-2;
-        max-width: 30%;
+        width: 30%;
+        min-width: 50;
 
         #log {
             background: $background-darken-3;
@@ -36,7 +37,7 @@ class ServerView(Vertical):
         self.server = Server(
             title=self.server_title,
             description=self.server_description,
-            log_level=2,
+            log_level=1,
             rich_log = self.console_log,
             interactive=False
         )
