@@ -36,4 +36,10 @@ def to_bytes(packet: Packet):
 
 def to_packet(data):
     unpacked = msgpack.unpackb(data, raw=False) # convert the bytes to a dict
-    return Packet(**unpacked) # load that dict into the Packet dataclass
+    packet = Packet(**unpacked) # load that dict into the Packet dataclass
+
+    # convert the packet_type from an int to an Enum
+    packet.packet_type = PacketType(packet.packet_type)
+
+    # return the packet
+    return packet
