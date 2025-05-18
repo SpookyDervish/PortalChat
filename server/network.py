@@ -1,5 +1,5 @@
-import socket, pickle, struct
-from server.packet import Packet, PacketType
+import socket, struct
+from server.packet import Packet, PacketType, to_packet, to_bytes
 
 
 class Network:
@@ -36,15 +36,12 @@ class Network:
         except (BlockingIOError, socket.error):
             return None
 
-        try:
-            return pickle.loads(response)
-        except pickle.UnpicklingError:
-            return Packet(PacketType.NOTIFICATION, "I'm tryna fix an issue where a server's memory can kinda be filled up, like I said, BETA. ;) - Nathaniel")
+        return to_packet(response)
 
     def connect(self):
         self.client.connect(self.addr)
         
     def send(self, data, blocking: bool = True) -> Packet:
 
-        self.client.send(pickle.dumps(data))
+        self.client.send(to_bytes(data))
         return self.recv(blocking)
