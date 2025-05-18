@@ -46,6 +46,7 @@ class Portal(App):
             self.ping_loop_worker = None
         if self.packet_handler_worker:
             self.packet_handler_worker.cancel()
+            self.packet_queue.put(Packet(PacketType.STOP))
             self.packet_handler_worker = None
         return super().action_quit()
 
@@ -157,7 +158,10 @@ class Portal(App):
             if packet == None: continue
 
             self.app.log(f"Got packet from queue: {packet}")
-            if packet.packet_type == PacketType.MESSAGE_RECV:
+            if packet.packet_type == PacketType.STOP:
+                self.app.log("Stopping packet handler...")
+                break
+            elif packet.packet_type == PacketType.MESSAGE_RECV:
                 self.app.log("Calling mount_msgs from the main thread...")
                 self.call_from_thread(self.mount_msgs, chat, {
                     "messages": [(
