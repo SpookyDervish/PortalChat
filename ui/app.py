@@ -202,6 +202,8 @@ class Portal(App):
                     self.app.log("Updating welcome...")
                     self.call_from_thread(self.update_welcome, packet.data["data"])
                     self.app.log("Done updating welcome!")
+                else:
+                    self.notify(f"Unhandled DATA packet: {packet}", title="Warning!", severity="warning", markup=False, timeout=10)
             elif packet.packet_type == PacketType.PING:
                 self.app.log("Ignoring ping packet...")
                 pass # ignore ping packets
@@ -212,7 +214,7 @@ class Portal(App):
                 self.log(packet.data)
                 self.notify(packet.data)
             else:
-                self.notify(f"Unhandled packet: {packet}", title="Warning!", severity="warning")
+                self.notify(f"Unhandled packet: {packet}", title="Warning!", severity="warning", markup=False, timeout=10)
 
     @work(thread=True)
     def ping_loop(self):

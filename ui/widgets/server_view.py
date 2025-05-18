@@ -37,7 +37,7 @@ class ServerView(VerticalGroup):
         self.server = Server(
             title=self.server_title,
             description=self.server_description,
-            log_level=1,
+            log_level=2,
             rich_log = self.console_log,
             interactive=False
         )
