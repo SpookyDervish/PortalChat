@@ -122,7 +122,6 @@ class Database:
 
         if not self.get_role_by_name("DefaultPerms"):
             self.create_role("DefaultPerms", 0, {})
-        self.role
             
         self.commit()
 
