@@ -1,12 +1,11 @@
 import socket
 import psutil
-import pickle
 import ipaddress
 import concurrent.futures
 try:
-    from server.packet import Packet, PacketType
+    from server.packet import Packet, PacketType, to_bytes, to_packet
 except ModuleNotFoundError:
-    from packet import Packet, PacketType
+    from packet import Packet, PacketType, to_bytes, to_packet
 
 # The port to scan for
 PORT = 5555
@@ -66,10 +65,10 @@ def scan_ip(ip):
         if result == 0:
             # get info about the server
             sock.recv(2048) # throw the "connection received" message out
-            sock.send(pickle.dumps(Packet(PacketType.GET, {"type": "INFO"})))
-            response = pickle.loads(sock.recv(2048))
+            sock.send(to_bytes(Packet(PacketType.GET, {"type": "INFO"})))
+            response = to_packet(sock.recv(2048))
 
-            sock.send(pickle.dumps(Packet(PacketType.DISCONNECT,None)))
+            sock.send(to_bytes(Packet(PacketType.DISCONNECT,None)))
             sock.close()
             
             data = response.data
