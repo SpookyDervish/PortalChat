@@ -170,6 +170,14 @@ class Server:
                         reply = Packet(PacketType.ERROR, "Channel doesn't exist!")
                     else:
                         reply = Packet(PacketType.DATA, {"data": {"messages": messages, "channel_name": server[1]}, "type": "SERVER_MSGS"})
+                elif packet.data["type"] == "MEMBERS":
+                    channel_id = packet.data["channel_id"]
+
+                    channel = self.db.get_channel_name_by_id(channel_id)
+                    self.log(channel)
+
+                    reply = Packet(PacketType.DATA, {"data": None, "type": "SERVER_MEMBERS"})
+                    
                 else:
                     reply = Packet(PacketType.ERROR, "Invalid GET type!")
             elif packet.packet_type == PacketType.MESSAGE_SEND:

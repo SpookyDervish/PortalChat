@@ -119,6 +119,10 @@ class Database:
         channel_id = self.get_channel_by_name(server_id, "general")
         if not channel_id:
             channel_id = self.create_channel_in_server(server_id, "general")
+
+        if not self.get_role_by_name("DefaultPerms"):
+            self.create_role("DefaultPerms", 0, {})
+        self.role
             
         self.commit()
 
@@ -132,26 +136,28 @@ class Database:
         self.cur.execute('''
             INSERT INTO roles (name, rank,
                 send_messages, view_message_history, mute_members,
-                kick_members, ban_members, manage_channels, manage_server
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                kick_members, ban_members, manage_channels, manage_server,
+                super_admin
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             name, rank,
-            int(permissions.get("send_messages", 0)),
-            int(permissions.get("view_message_history", 0)),
+            int(permissions.get("send_messages", 1)),
+            int(permissions.get("view_message_history", 1)),
             int(permissions.get("mute_members", 0)),
             int(permissions.get("kick_members", 0)),
             int(permissions.get("ban_members", 0)),
             int(permissions.get("manage_channels", 0)),
-            int(permissions.get("manage_server", 0))
+            int(permissions.get("manage_server", 0)),
+            int(permissions.get("super_admin", 0))
         ))
-        self.conn.commit()
+        self.commit()
 
     def assign_role_to_user(self, user_uuid: str, role_id: int, server_id: int):
         self.cur.execute('''
             INSERT OR IGNORE INTO user_roles (user_uuid, role_id, server_id)
             VALUES (?, ?, ?)
         ''', (user_uuid, role_id, server_id))
-        self.conn.commit()
+        self.commit()
 
     def get_roles_for_user_in_server(self, user_uuid: str, server_id: int):
         self.cur.execute('''
@@ -288,6 +294,7 @@ class Database:
             INSERT INTO channels (name, server_id)
             VALUES (?, ?)
         """, (channel_name, server_id))
+        self.commit()
 
         return self.cur.lastrowid  # Return the new channel's ID
     
@@ -307,6 +314,7 @@ class Database:
             INSERT INTO messages (content, user_uuid, user_name, channel_id)
             VALUES (?, ?, ?, ?)
         """, (content, user_uuid, user_name, channel_id))
+        self.commit()
 
         return self.cur.lastrowid  # Return the new message's ID
 
@@ -316,6 +324,7 @@ class Database:
 
         self.cur.execute("INSERT INTO servers (name) VALUES (?)", (server_name,))
         server_id = self.cur.lastrowid
+        self.commit()
         return server_id
     
     def create_user(self, user_name: str, uuid: str):
@@ -324,6 +333,7 @@ class Database:
 
         self.cur.execute("INSERT INTO users (user_uuid, username) VALUES (?, ?)", (uuid,user_name))
         user_uuid = self.cur.lastrowid
+        self.commit()
         return user_uuid
     
     def add_user_to_server(self, user_uuid: str, server_id: int):
@@ -367,6 +377,15 @@ class Database:
         JOIN servers s ON m.server_id = s.server_id
         WHERE s.name = ?
         """, (server_name,))
+        return [row[0] for row in self.cur.fetchall()]
+    
+    def users_in_server_id(self, server_id: int):
+        self.cur.execute("""
+            SELECT u.username
+            FROM users u
+            JOIN memberships m ON u.user_uuid = m.user_uuid
+            WHERE m.server_id = ?
+        """, (server_id,))
         return [row[0] for row in self.cur.fetchall()]
     
     def servers_with_user(self, user_name: str):
