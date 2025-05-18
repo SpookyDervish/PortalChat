@@ -30,8 +30,8 @@ class Packet:
 def to_bytes(packet: Packet):
     # convert the packet to a dict, and then convert it to be bytes
     # so it can be sent over the socket
-    packet_type = packet.packet_type.value
-    packet.packet_type = packet_type
+    if isinstance(packet.packet_type, PacketType):
+        packet.packet_type = packet.packet_type.value
 
     # ensure timestamps are converted to strings to avoid issues
     if packet.data and packet.data.get("timestamp"):
