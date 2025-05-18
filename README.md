@@ -5,6 +5,7 @@ Portal is a TCP based LAN chat app! It is an attempt at recreating Discord, but 
 > [!IMPORTANT]  
 > You should clone the repository, not download the zip. This is because automatic updates require
 > that there is a git repo initialised in Portal's folder.
+
 > [!WARNING]  
 > Portal is still in an extremely buggy state, there shouldn't be any risks of damage to any devices
 > you put Portal on, however only join servers from trusted people, as they can see anything going
