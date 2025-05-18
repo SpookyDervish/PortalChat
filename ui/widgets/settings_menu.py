@@ -2,6 +2,7 @@ from textual.screen import ModalScreen
 from textual.containers import Vertical, Horizontal, Container, Center, Right
 from textual.widgets import Label, Button, Input, Rule, TabbedContent, TabPane, Select
 
+from ui.config import conf_get, conf_set
 from ui.widgets.image import Image
 
 import configparser, os
@@ -113,8 +114,8 @@ class SettingsScreen(ModalScreen):
         self.config = configparser.ConfigParser()
         self.config.read("user_settings.ini")
 
-        if not os.path.isfile(self.config.get("MyAccount", "icon_path")):
-            self.config.set("MyAccount", "icon_path", os.path.abspath("assets/images/default_user.png"))
+        if not os.path.isfile(conf_get(self.config, "MyAccount", "icon_path")):
+            conf_set(self.config, "MyAccount", "icon_path", os.path.abspath("assets/images/default_user.png"))
             self.save_settings()
         
     def save_settings(self):
@@ -131,8 +132,8 @@ class SettingsScreen(ModalScreen):
 
         if select.id == "theme-select":
             chosen_theme = select._options[event.value][0]
-            self.config["Appearance"]["theme"] = chosen_theme
-            self.config["Appearance"]["theme_index"] = str(event.value)
+            conf_set(self.config, "Appearance", "theme", chosen_theme)
+            conf_set(self.config, "Appearance", "theme_index", str(event.value))
             self.app.theme = chosen_theme
 
             self.save_settings()
@@ -147,7 +148,7 @@ class SettingsScreen(ModalScreen):
             self.notify("Settings saved!")
             self.save_settings()
 
-            user_name = self.config.get("MyAccount", "username")
+            user_name = conf_get(self.config, "MyAccount", "username")
 
             # update ui elements with new data
             self.query_one("#username-label").update(user_name)
@@ -160,10 +161,10 @@ class SettingsScreen(ModalScreen):
 
     def on_input_changed(self, event):
         if event.input.id == "username-input":
-            self.config["MyAccount"]["username"] = event.input.value
+            conf_set(self.config, "MyAccount", "username", event.input.value)
 
     def compose(self):
-        user_name = self.config.get("MyAccount", "username")
+        user_name = conf_get(self.config, "MyAccount", "username")
 
         with Vertical(id="window") as window:
             window.border_title = "=== Settings ==="
@@ -206,5 +207,5 @@ class SettingsScreen(ModalScreen):
                             options=[(theme,i) for i, theme in enumerate(self.app._registered_themes.keys())],
                             allow_blank=False,
                             id="theme-select",
-                            value=int(self.config.get("Appearance", "theme_index"))
+                            value=int(conf_get(self.config, "Appearance", "theme_index"))
                         )

@@ -4,6 +4,7 @@ import sys, os
 import traceback
 from _thread import start_new_thread
 from datetime import datetime
+from time import sleep
 
 from textual.widgets import RichLog
 
@@ -70,16 +71,24 @@ class Server:
             start_new_thread(self.interactive_terminal, ())
 
         self.log("Starting main server accept loop...", level=1)
+        start_new_thread(self.main_loop, ())
 
-        # main server loop
+        # keep main thread alive (is there a better way to do this?)
+        try:
+            while True: sleep(1)
+        except KeyboardInterrupt:
+            self.log("Interrupt received!", 2)
+            self.stop()
+
+    def main_loop(self):
         while self.running:
-            if self.sock.fileno() == -1: # the socket is closed
+            if self.sock.fileno() == -1:  # the socket is closed
                 self.running = False
                 break
-            
+
             try:
                 conn, addr = self.sock.accept()
-            except (ConnectionAbortedError, OSError): # socket was closed by server owner
+            except (ConnectionAbortedError, OSError, KeyboardInterrupt):  # socket was closed by server owner
                 break
 
             if addr[0] in self.BLOCKED_IPS:
@@ -141,11 +150,13 @@ class Server:
 
     def interactive_terminal(self):
         while True:
-            user_input = console.input("[bold green]>[/bold green] ")
+            try:
+                user_input = console.input("[bold green]>[/bold green] ")
 
-            if user_input == "close":
-                self.stop()
-                break
+                if user_input == "close":
+                    self.stop()
+                    break
+            except (EOFError, KeyboardInterrupt): break
 
     def handle_packet(self, packet: Packet, conn: socket.socket):
         reply = None
