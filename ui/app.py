@@ -158,7 +158,7 @@ class Portal(App):
 
             self.app.log(f"Got packet from queue: {packet}")
             if packet.packet_type == PacketType.MESSAGE_RECV:
-                self.app.log("Calling mount_msgs from the mian thread...")
+                self.app.log("Calling mount_msgs from the main thread...")
                 self.call_from_thread(self.mount_msgs, chat, {
                     "messages": [(
                         None, # not needed atm
