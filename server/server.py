@@ -10,7 +10,7 @@ from textual.widgets import RichLog
 
 from rich.traceback import install
 from rich.console import Console
-from server.packet import Packet, PacketType
+from server.packet import Packet, PacketType, to_bytes, to_packet
 from server.db import Database
 
 
@@ -116,7 +116,7 @@ class Server:
         sender_uuid: str = sender_info["uuid"]
 
         if sender_name.strip() == "" or len(sender_name) > 25: # invalid username
-            sender_conn.sendall(self.to_bytes(Packet(
+            sender_conn.sendall(to_bytes(Packet(
                 PacketType.NOTIFICATION,
                 "You can't send messages because your username is invalid."
             )))
@@ -144,7 +144,7 @@ class Server:
 
         for user in self.clients:
             self.log(f"Sending packet to {user}: {packet}", 1)
-            user.send(self.to_bytes(packet))
+            user.send(to_bytes(packet))
 
         return True
 
@@ -223,12 +223,12 @@ class Server:
     def handle_client(self, conn: socket.socket):
         self.log("Started new thread for client.", level=1)
 
-        conn.send(self.to_bytes(Packet(PacketType.CONNECTION_STARTED, None)))
+        conn.send(to_bytes(Packet(PacketType.CONNECTION_STARTED, None)))
 
         while self.running:
             try:
                 try:
-                    data = self.to_packet(conn.recv(2048))
+                    data = to_packet(conn.recv(2048))
                 except (msgpack.ExtraData, msgpack.FormatError, msgpack.StackError, msgpack.UnpackValueError) as e:
                     self.log(f"CLIENT ATTEMPTED TO SEND NON-PACKET DATA, CLOSING CONNECTION..", 3)
                     break
@@ -245,7 +245,7 @@ class Server:
                 self.log(f"Send   : {reply}", 1)
 
                 if reply != None:
-                    conn.sendall(self.to_bytes(reply))
+                    conn.sendall(to_bytes(reply))
             except (socket.error, EOFError) as e:
                 self.log(f"A client created a socket error. The connection will be closed.\n\t- Client: {conn.getsockname()}\n\t- Error: {e}", 3)
                 break
