@@ -8,6 +8,7 @@ import uuid
 import os
 import configparser
 
+from ui.config import DEFAULT_CONFIG, conf_get
 from ui.widgets.update_screen import UpdateScreen
 from ui.widgets.sidebar import ServerList, ChannelList, MemberList
 from ui.widgets.welcome import Welcome
@@ -49,14 +50,8 @@ class Portal(App):
         return super().action_quit()
 
     def init_settings_file(self):
-        self.config["MyAccount"] = {
-            "username": "user",
-            "icon_path": os.path.abspath("assets/images/default_user.png")
-        }
-        self.config["Appearance"] = {
-            "theme_index": 0,
-            "theme": "textual-dark"
-        }
+        for key in DEFAULT_CONFIG:
+            self.config[key] = DEFAULT_CONFIG[key]
         with open('user_settings.ini', "w") as config_file:
             self.config.write(config_file)
 
@@ -75,7 +70,7 @@ class Portal(App):
         if not os.path.isfile('user_settings.ini'):
             self.init_settings_file()
         self.config.read("user_settings.ini")
-        self.theme = self.config.get("Appearance", "theme")
+        self.theme = conf_get(self.config, "Appearance", "theme")
 
         self.is_open = True
         self.n = None
@@ -122,7 +117,7 @@ class Portal(App):
 
     @work
     async def send_message(self, message: str):
-        self.n.send(Packet(PacketType.MESSAGE_SEND, {"message": message, "channel_id": self.channel_id, "username": self.config.get("MyAccount", "username"), "uuid": self.user_id}))
+        self.n.send(Packet(PacketType.MESSAGE_SEND, {"message": message, "channel_id": self.channel_id, "username": conf_get(self.config, "MyAccount", "username"), "uuid": self.user_id}))
         #self.packet_queue.put(response)
 
     @work
