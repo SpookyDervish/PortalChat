@@ -16,15 +16,15 @@ Portal is a TCP based LAN chat app! It is an attempt at recreating Discord, but 
 - Git
 
 Git clone the repo:
-> git clone https://github.com/SpookyDervish/PortalChat
+> Clone Command: `git clone https://github.com/SpookyDervish/PortalChat`
 
 CD into the repo and install requirements:
-> MacOS / Linux: pip3 install -r requirements.txt
-> Windows: pip install -r requirements.txt
+> MacOS / Linux: `pip3 install -r requirements.txt`
+> Windows: `pip install -r requirements.txt`
 
 Start Portal!
-> MacOS: python3 main.py
-> Windows: python main.py
+> MacOS: `python3 main.py`
+> Windows: `python main.py`
 
 # Screenshots
 ![A screenshot of Portal, showing what the UI looks like when you're in a server.](screenshots/screenshot1.png)
