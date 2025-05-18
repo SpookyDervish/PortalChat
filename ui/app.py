@@ -75,6 +75,7 @@ class Portal(App):
         if not os.path.isfile('user_settings.ini'):
             self.init_settings_file()
         self.config.read("user_settings.ini")
+        self.theme = self.config.get("Appearance", "theme")
 
         self.is_open = True
         self.n = None
