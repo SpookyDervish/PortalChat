@@ -64,9 +64,11 @@ class Server:
 
         self.log(f"Server title is \"{self.server_info['title']}\"\n")
 
+        self.ip = self.get_ip()
+
         self.sock.listen()
         self.log("Server is listening and ready to receive connections!")
-        self.log(f"IP: [bold green]{self.get_ip()}[/bold green]")
+        self.log(f"IP: [bold green]{self.ip}[/bold green]")
 
         if self.interactive:
             self.log("Starting interactive terminal...", level=1)
@@ -185,11 +187,11 @@ class Server:
 
         packet = Packet(
                 PacketType.MESSAGE_RECV,
-                {"message": message, "sender_name": sender_name, "timestamp": datetime.now(), "channel_id": channel_id, "channel_name": self.db.get_channel_name_by_id(channel_id)}
+                {"message": message, "sender_name": sender_name, "timestamp": datetime.now(), "channel_id": channel_id, "channel_name": self.db.get_channel_name_by_id(channel_id), "server_id": self.db.get_server_from_channel(channel_id)[0], "server_ip": self.ip}
             )
 
         for user in self.clients:
-            if user == sender_conn: continue
+            #if user == sender_conn: continue
             self.log(f"Sending packet to {user}: {packet}", 2)
             user.send(to_bytes(packet))
 
@@ -253,7 +255,7 @@ class Server:
                 was_sent = self.send_message(msg, channel_id, conn, {"username": user_name, "uuid": packet.data["uuid"]})
                 reply = Packet(
                         PacketType.MESSAGE_RECV,
-                        {"message": msg, "sender_name": f"{user_name}{not was_sent and ' [dim red](NOT SENT)[/] ' or ''}", "timestamp": datetime.now(), "channel_id": channel_id, "channel_name": self.db.get_channel_name_by_id(channel_id)}
+                        {"message": msg, "sender_name": f"{user_name}{not was_sent and ' [dim red](NOT SENT)[/] ' or ''}", "timestamp": datetime.now(), "channel_id": channel_id, "channel_name": self.db.get_channel_name_by_id(channel_id), "server_ip": self.ip}
                     )
             else:
                 reply = Packet(PacketType.ERROR, "Invalid packet type!")

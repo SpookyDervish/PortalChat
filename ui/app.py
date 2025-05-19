@@ -179,7 +179,7 @@ class Portal(App):
             elif packet.packet_type == PacketType.MESSAGE_RECV:
                 self.app.log("Calling mount_msgs from the main thread...")
 
-                if packet.data["channel_id"] != self.channel_id:
+                if packet.data["channel_id"] != self.channel_id or self.opened_server[2] != packet.data["server_ip"]:
                     if bool(int(conf_get(self.config, "Notifications", "notification-sound"))):
                         playsound.playsound(os.path.abspath("assets/sounds/notification.mp3"), False)
                     if bool(int(conf_get(self.config, "Notifications", "desktop-notifications"))):
@@ -285,6 +285,8 @@ class Portal(App):
         channel_list = self.query_one(ChannelList)
         welcome = self.query_one(Welcome)
         member_list = self.query_one(MemberList)
+
+        self.opened_server = server_info
 
         if server_info == None: # go back to welcome screen
             welcome.display = "block"
