@@ -30,7 +30,6 @@ class MemberList(Tree):
     MemberList {
         dock: right;
         max-width: 25;
-        margin-left: 10;
     }
     """
 
