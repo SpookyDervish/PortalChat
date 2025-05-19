@@ -31,7 +31,7 @@ class Network:
     def close(self):
         self.client.close()
 
-    def recv(self, blocking: bool = False) -> Packet:
+    def recv(self, blocking: bool = False) -> list[Packet]:
         self.client.setblocking(blocking)
 
         if blocking:

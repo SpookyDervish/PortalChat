@@ -100,7 +100,8 @@ class Portal(App):
         if event.node.tree.id != "channels": return
 
         if event.node == event.node.tree.root or event.node.data == None:
-            self.packet_queue.put(self.n.send(Packet(PacketType.GET, {"type": "INFO"}, tag="server-overview")))
+            for p in self.n.send(Packet(PacketType.GET, {"type": "INFO"}, tag="server-overview")):
+                self.packet_queue.put(p)
             chat.display = "none"
             chat_area.display = 'none'
         else:
@@ -116,10 +117,12 @@ class Portal(App):
             self.channel_id = data
 
             # Get messages in the selected channel
-            self.packet_queue.put(self.n.send(Packet(PacketType.GET, {"type": "MESSAGES", "channel_id": self.channel_id}, tag="servr-msgs")))
+            for p in self.n.send(Packet(PacketType.GET, {"type": "MESSAGES", "channel_id": self.channel_id}, tag="servr-msgs")):
+                self.packet_queue.put(p)
 
             # Update member list
-            self.packet_queue.put(self.n.send(Packet(PacketType.GET, {"type": "MEMBERS", "channel_id": self.channel_id}, tag="servr-members")))
+            for p in self.n.send(Packet(PacketType.GET, {"type": "MEMBERS", "channel_id": self.channel_id}, tag="servr-members")):
+                self.packet_queue.put(p)
         
         
 
@@ -317,4 +320,6 @@ class Portal(App):
         channel_list.select_node(channel_list.root)
         self.ping_loop_worker = self.ping_loop()
         self.packet_handler_worker = self.packet_handler()
-        self.packet_queue.put(self.n.send(Packet(PacketType.GET, {"type": "CHANNELS"})))
+
+        for p in self.n.send(Packet(PacketType.GET, {"type": "CHANNELS"})):
+            self.packet_queue.put(p)
