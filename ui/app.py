@@ -184,16 +184,16 @@ class Portal(App):
                             f"Message in #{packet.data['channel_name']} from @{packet.data['sender_name']}",
                             packet.data["message"]
                         )
-
-                self.call_from_thread(self.mount_msgs, chat, {
-                    "messages": [(
-                        None, # not needed atm
-                        packet.data["message"],
-                        packet.data["timestamp"],
-                        packet.data["sender_name"]
-                    )],
-                    "channel_name": packet.data["channel_name"]
-                })
+                else:
+                    self.call_from_thread(self.mount_msgs, chat, {
+                        "messages": [(
+                            None, # not needed atm
+                            packet.data["message"],
+                            packet.data["timestamp"],
+                            packet.data["sender_name"]
+                        )],
+                        "channel_name": packet.data["channel_name"]
+                    })
                 self.app.log("Done with msgs!")
             elif packet.packet_type == PacketType.DATA:
                 if packet.data["type"] == "SERVER_CHANNELS":
