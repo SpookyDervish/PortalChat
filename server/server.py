@@ -228,10 +228,13 @@ class Server:
         while self.running:
             try:
                 try:
-                    data = to_packet(conn.recv(2048))
-                except (msgpack.ExtraData, msgpack.FormatError, msgpack.StackError, msgpack.UnpackValueError) as e:
+                    recv_data = conn.recv(2048)
+                    data = to_packet(recv_data)
+                except (msgpack.FormatError, msgpack.StackError, msgpack.UnpackValueError) as e:
                     self.log(f"CLIENT ATTEMPTED TO SEND NON-PACKET DATA:\n\t- Data: \"{data}\"\n\t- Traceback: [bold red]{traceback.format_exc()}", 3)
                     break
+                except msgpack.ExtraData: # idk why it does this, but it still works lmao
+                    pass
 
                 if data.packet_type != PacketType.PING:
                     self.log(f"Receive: {data}", 1)
