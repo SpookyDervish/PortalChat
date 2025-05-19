@@ -230,7 +230,7 @@ class Server:
                 try:
                     data = to_packet(conn.recv(2048))
                 except (msgpack.ExtraData, msgpack.FormatError, msgpack.StackError, msgpack.UnpackValueError) as e:
-                    self.log(f"CLIENT ATTEMPTED TO SEND NON-PACKET DATA:\n\t- Data: \"{data}\"", 3)
+                    self.log(f"CLIENT ATTEMPTED TO SEND NON-PACKET DATA:\n\t- Data: \"{data}\"\n\t- Traceback: [bold red]{traceback.format_exc()}", 3)
                     break
 
                 if data.packet_type != PacketType.PING:
