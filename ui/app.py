@@ -257,7 +257,8 @@ class Portal(App):
             while self.is_open:
                 response = self.n.recv()
                 if response != None:
-                    self.packet_queue.put(response)
+                    for packet in response:
+                        self.packet_queue.put(packet)
         except Exception: # server was closed
             server_list = self.query_one(ServerList)
             for button in server_list.query_one("#icons").children:
