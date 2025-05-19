@@ -4,7 +4,7 @@ from textual.containers import Vertical
 from textual import on, work
 from textual.events import ScreenResume
 from textual.worker import Worker, WorkerState
-from git import Repo
+from git import Repo, GitCommandError
 
 import sys, os
 
@@ -59,7 +59,6 @@ class UpdateScreen(ModalScreen):
     @on(ScreenResume)
     def check(self):
         self.repo = Repo()
-
         self.check_for_updates()
 
     @work(thread=True)
@@ -92,7 +91,15 @@ class UpdateScreen(ModalScreen):
             int: How many commits is the current branch behind?
         """
         current_branch = self.repo.active_branch
-        self.repo.remotes.origin.fetch()
+
+        try:
+            self.repo.remotes.origin.fetch()
+        except GitCommandError:
+            self.notify("Failed to check for updates! Please check you have internet.", title="Woops!", severity="warning", timeout=10)
+            self.dismiss()
+            
+            return
+        
 
         behind_count = sum(1 for c in self.repo.iter_commits(f"{current_branch}..origin/{current_branch}"))
     
