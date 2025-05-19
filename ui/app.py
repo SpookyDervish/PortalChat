@@ -168,7 +168,7 @@ class Portal(App):
             elif packet.packet_type == PacketType.MESSAGE_RECV:
                 self.app.log("Calling mount_msgs from the main thread...")
 
-                if packet.data["channel_id"] != self.channel_id:
+                if bool(conf_get(self.config, "Notifications", "notification-sound")) and packet.data["channel_id"] != self.channel_id:
                     playsound.playsound("assets/sounds/notification.mp3", False)
 
                 self.call_from_thread(self.mount_msgs, chat, {

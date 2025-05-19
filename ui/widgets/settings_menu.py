@@ -1,6 +1,6 @@
 from textual.screen import ModalScreen
-from textual.containers import Vertical, Horizontal, Container, Center, Right
-from textual.widgets import Label, Button, Input, Rule, TabbedContent, TabPane, Select
+from textual.containers import Vertical, Horizontal, Container, Center, Right, VerticalGroup
+from textual.widgets import Label, Button, Input, Rule, TabbedContent, TabPane, Select, Checkbox
 
 from ui.config import conf_get, conf_set
 from ui.widgets.image import Image
@@ -97,13 +97,26 @@ class SettingsScreen(ModalScreen):
 
         .settings-grid {
             layout: grid;
-            grid-size: 2 1;
-            padding: 1;
+            grid-size: 2 2;
+            padding: 1 2;
+            
 
-            Label {
+            Vertical {
                 height: 3;
                 width: 1fr;
                 content-align: left middle;
+
+                .setting-description {
+                    min-height: 2;
+                    text-style: dim;
+                    text-wrap: wrap;
+                    max-width: 95%;
+                }
+
+                .setting-title {
+                    text-style: bold;
+                }
+                
             }
         }
     }
@@ -126,6 +139,15 @@ class SettingsScreen(ModalScreen):
     def on_key(self, event):
         if event.key == "escape":
             self.dismiss()
+
+    def on_checkbox_changed(self, event: Checkbox.Changed):
+        checkbox = event.checkbox
+
+        if checkbox.id == "notif-sound":
+            conf_set(self.config, "Notifications", "notification-sound", str(int(checkbox.value)))
+        elif checkbox.id == "desktop-notif":
+            conf_set(self.config, "Notifications", "desktop-notifications", str(int(checkbox.value)))
+        self.save_settings()
 
     def on_select_changed(self, event: Select.Changed):
         select = event.select
@@ -202,10 +224,33 @@ class SettingsScreen(ModalScreen):
                     yield Rule()
 
                     with Vertical(classes="settings-grid"):
-                        yield Label("Colour Theme:")
+                        with Vertical():
+                            yield Label("Colour Theme:")
+                            yield Label("[dim]Change how the Portal interface looks!")
+
                         yield Select(
-                            options=[(theme,i) for i, theme in enumerate(self.app._registered_themes.keys())],
+                            options=[(theme, i) for i, theme in enumerate(self.app._registered_themes.keys())], 
                             allow_blank=False,
                             id="theme-select",
                             value=int(conf_get(self.config, "Appearance", "theme_index"))
+                        )
+                with TabPane("Notifications"):
+                    yield Label("Notifications", classes="title", variant="accent")
+                    yield Rule()
+
+                    with VerticalGroup(classes="settings-grid"):
+                        with Vertical():
+                            yield Label("Notification Sound:", classes="setting-title")
+                            yield Label("Play a little sound every time you get a notification.", classes="setting-description")
+                        yield Checkbox(
+                            value=bool(conf_get(self.config, "Notifications", "notification-sound")),
+                            id="notif-sound"
+                        )
+                    with VerticalGroup(classes="settings-grid"):
+                        with Vertical():
+                            yield Label("Desktop Notifications:", classes="setting-title")
+                            yield Label("Get a notification in the corner of your screen when you receive a message.", classes="setting-description")
+                        yield Checkbox(
+                            value=bool(conf_get(self.config, "Notifications", "desktop-notifications")),
+                            id="desktop-notif"
                         )

@@ -9,6 +9,10 @@ DEFAULT_CONFIG = {
     "Appearance": {
         "theme_index": 0,
         "theme": "textual-dark"
+    },
+    "Notifications": {
+        "notification-sound": 1, # 1 for True
+        "desktop-notifications": 1 # 1 for True
     }
 }
 

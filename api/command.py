@@ -1,10 +1,30 @@
 import inspect, argparse
+from enum import Enum
+from dataclasses import dataclass
+
+from api import command, Message, Channel
 
 
 command_registry = {}
 
 
-def command(name: str):
+class Permission(Enum):
+    SEND_MESSAGES = 1
+    VIEW_MESSAGE_HISTORY = 2
+    MUTE_MEMBERS = 3
+    KICK_MEMBERS = 4
+    BAN_MEMBERS = 5
+    MANAGE_CHANNELS = 6
+    MANAGE_SERVER = 7
+    SUPER_ADMIN = 8
+
+@dataclass
+class CommandContext:
+    channel: Channel
+    message: Message
+
+
+def command(name: str, required_permissions: list[Permission] = []):
     def decorator(func):
         sig = inspect.signature(func)
         parser = argparse.ArgumentParser(prog=f"/{name}")
@@ -32,5 +52,6 @@ def command(name: str):
                 pass # TODO: help message
 
         command_registry[name] = wrapper
+        print(command_registry)
         return wrapper
     return decorator
