@@ -3,5 +3,5 @@ psutil
 rich_pixels
 gitpython
 msgpack
-playsound
+playsound==1.2.2
 desktop-notifier

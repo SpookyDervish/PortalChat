@@ -243,7 +243,7 @@ class SettingsScreen(ModalScreen):
                             yield Label("Notification Sound:", classes="setting-title")
                             yield Label("Play a little sound every time you get a notification.", classes="setting-description")
                         yield Checkbox(
-                            value=bool(conf_get(self.config, "Notifications", "notification-sound")),
+                            value=bool(int(conf_get(self.config, "Notifications", "notification-sound"))),
                             id="notif-sound"
                         )
                     with VerticalGroup(classes="settings-grid"):
@@ -251,6 +251,6 @@ class SettingsScreen(ModalScreen):
                             yield Label("Desktop Notifications:", classes="setting-title")
                             yield Label("Get a notification in the corner of your screen when you receive a message.", classes="setting-description")
                         yield Checkbox(
-                            value=bool(conf_get(self.config, "Notifications", "desktop-notifications")),
+                            value=bool(int(conf_get(self.config, "Notifications", "desktop-notifications"))),
                             id="desktop-notif"
                         )

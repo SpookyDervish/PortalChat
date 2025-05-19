@@ -17,6 +17,8 @@ from ui.widgets.chat import Chat, Message
 from ui.widgets.message_box import ChatArea
 from ui.widgets.server_overview import ServerOverview
 
+from desktop_notifier import DesktopNotifier, Icon
+
 from server.network import Network
 from server.packet import Packet, PacketType
 
@@ -73,6 +75,8 @@ class Portal(App):
             self.init_settings_file()
         self.config.read("user_settings.ini")
         self.theme = conf_get(self.config, "Appearance", "theme")
+
+        self.desktop_notifier = DesktopNotifier(app_name="Portal")
 
         self.is_open = True
         self.n = None
@@ -150,6 +154,10 @@ class Portal(App):
 
         self.mount(ServerOverview(server_info), after=self.query_one(ChannelList))
 
+    @work
+    async def send_notification(self, title: str, message: str):
+        await self.desktop_notifier.send(title, message=message)
+
     @work(thread=True)
     def packet_handler(self):
         chat = self.query_one(Chat)
@@ -168,8 +176,14 @@ class Portal(App):
             elif packet.packet_type == PacketType.MESSAGE_RECV:
                 self.app.log("Calling mount_msgs from the main thread...")
 
-                if bool(conf_get(self.config, "Notifications", "notification-sound")) and packet.data["channel_id"] != self.channel_id:
-                    playsound.playsound("assets/sounds/notification.mp3", False)
+                if packet.data["channel_id"] != self.channel_id:
+                    if bool(int(conf_get(self.config, "Notifications", "notification-sound"))):
+                        playsound.playsound(os.path.abspath("assets/sounds/notification.mp3"), False)
+                    if bool(int(conf_get(self.config, "Notifications", "desktop-notifications"))):
+                        self.send_notification(
+                            f"Message in #{packet.data['channel_name']} from @{packet.data['sender_name']}",
+                            packet.data["message"]
+                        )
 
                 self.call_from_thread(self.mount_msgs, chat, {
                     "messages": [(
