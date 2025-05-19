@@ -92,6 +92,8 @@ class Portal(App):
         chat = self.query_one(Chat)
         chat_area = self.query_one(ChatArea)
 
+        if event.node.tree.id != "channels": return
+
         if event.node == event.node.tree.root or event.node.data == None:
             self.packet_queue.put(self.n.send(Packet(PacketType.GET, {"type": "INFO"}, tag="server-overview")))
             chat.display = "none"
@@ -151,6 +153,7 @@ class Portal(App):
     def packet_handler(self):
         chat = self.query_one(Chat)
         channel_list = self.query_one(ChannelList)
+        member_list = self.query_one(MemberList)
 
         while self.is_open:
             packet = self.packet_queue.get()
@@ -197,6 +200,20 @@ class Portal(App):
                     # add new messages
                     self.call_from_thread(self.mount_msgs, chat, data, banner=True)
                     self.app.log("Done redrawing entire message history!")
+                elif packet.data["type"] == "SERVER_MEMBERS":
+                    member_list.clear()
+                    for role in packet.data["data"]:
+                        role_name = role[0]
+                        members_with_role = role[1]
+
+                        if role_name == "DefaultPerms":
+                            for member in members_with_role:
+                                member_list.root.add_leaf(member)
+                        else:
+                            role_node = member_list.root.add(role_name)
+                            for member in members_with_role:
+                                role_node.add_leaf(member)
+                    member_list.root.expand_all()
                 elif packet.tag == "server-overview":
                     self.app.log("Updating welcome...")
                     self.call_from_thread(self.update_welcome, packet.data["data"])
