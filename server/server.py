@@ -178,7 +178,7 @@ class Server:
                     if messages == None and server == None:
                         reply = Packet(PacketType.ERROR, "Channel doesn't exist!")
                     else:
-                        reply = Packet(PacketType.DATA, {"data": {"messages": messages, "channel_name": server[1]}, "type": "SERVER_MSGS"})
+                        reply = Packet(PacketType.DATA, {"data": {"messages": messages, "channel_name": self.db.get_channel_name_by_id(channel_id)}, "type": "SERVER_MSGS"})
                 elif packet.data["type"] == "MEMBERS":
                     channel_id = packet.data["channel_id"]
                     server = self.db.get_server_from_channel(channel_id)
