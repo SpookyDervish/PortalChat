@@ -250,7 +250,7 @@ class Server:
                 if reply != None:
                     conn.sendall(to_bytes(reply))
             except (socket.error, EOFError) as e:
-                self.log(f"A client created a socket error. The connection will be closed.\n\t- Client: {conn.getsockname()}\n\t- Error: {e}", 3)
+                self.log(f"A client created a socket error. The connection will be closed.\n\t- Client: {conn.getsockname()}\n\t- Error: [bold red]{traceback.format_exc()}", 3)
                 break
 
 
