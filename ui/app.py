@@ -131,7 +131,7 @@ class Portal(App):
         self.n.send(Packet(PacketType.MESSAGE_SEND, {"message": message, "channel_id": self.channel_id, "username": conf_get(self.config, "MyAccount", "username"), "uuid": self.user_id}))
         #self.packet_queue.put(response)
 
-    @work
+    @work(exclusive=True,group="mount-messages")
     async def mount_msgs(self, chat, data, banner: bool = False):
         if banner:
             await chat.mount(Label(f"[b][u]Welcome![/u][/b]\n[dim]This is the start of the #{data['channel_name']} channel.[/dim]\n[dim]Portal has only [bold]just started development[/bold], so watch out for bugs![/dim]"))
