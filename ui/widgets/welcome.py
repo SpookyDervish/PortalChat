@@ -41,8 +41,7 @@ Once you're in a server, you can look at any channel and see the messages.
 While Portal **is** a passion project, it does have real world uses!
 1. Portal is local, meaning you don't have to connect to some server, somewhere else in the world! Completely secure.
 2. Portal is local!! You can do anything with the code as Portal is open source, make any modifications you like.
-3. Portal is portable, and works without internet!
-4. Portal is low latency because it is local, messages are nearly instantaneous!"""
+3. Portal is low latency because it is local, messages are nearly instantaneous!"""
     
     
     COLOURS = [
