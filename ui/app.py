@@ -7,6 +7,7 @@ from queue import Queue
 import uuid
 import os
 import configparser
+import playsound
 
 from ui.config import DEFAULT_CONFIG, conf_get
 from ui.widgets.update_screen import UpdateScreen
@@ -166,6 +167,10 @@ class Portal(App):
                 break
             elif packet.packet_type == PacketType.MESSAGE_RECV:
                 self.app.log("Calling mount_msgs from the main thread...")
+
+                if packet.data["channel_id"] != self.channel_id:
+                    playsound.playsound("assets/sounds/notification.mp3", False)
+
                 self.call_from_thread(self.mount_msgs, chat, {
                     "messages": [(
                         None, # not needed atm
@@ -173,7 +178,7 @@ class Portal(App):
                         packet.data["timestamp"],
                         packet.data["sender_name"]
                     )],
-                    "channel_name": None
+                    "channel_name": packet.data["channel_name"]
                 })
                 self.app.log("Done with msgs!")
             elif packet.packet_type == PacketType.DATA:
