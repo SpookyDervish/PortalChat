@@ -3,3 +3,4 @@ psutil
 rich_pixels
 gitpython
 msgpack
+playsound
