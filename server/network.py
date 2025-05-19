@@ -40,7 +40,7 @@ class Network:
         try:
             response = self.client.recv(self.buffer_size)
         except (BlockingIOError, socket.error):
-            return None
+            return [Packet(PacketType.NONE, None)]
 
         return to_packet(response)
 

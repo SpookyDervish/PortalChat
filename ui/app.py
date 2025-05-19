@@ -170,7 +170,7 @@ class Portal(App):
         while self.is_open:
             packet = self.packet_queue.get()
 
-            if packet == None: continue
+            if packet.packet_type == PacketType.NONE: continue
 
             self.app.log(f"Got packet from queue: {packet}")
             if packet.packet_type == PacketType.STOP:
@@ -242,9 +242,6 @@ class Portal(App):
                     self.app.log("Done updating welcome!")
                 else:
                     self.notify(f"Unhandled DATA packet: {packet}", title="Warning!", severity="warning", markup=False, timeout=10)
-            elif packet.packet_type == PacketType.PING:
-                self.app.log("Ignoring ping packet...")
-                pass # ignore ping packets
             elif packet.packet_type == PacketType.CONNECTION_STARTED:
                 self.app.log("Ignoring connection packet...")
                 pass # ignore connection started packets

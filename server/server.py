@@ -162,10 +162,8 @@ class Server:
         reply = None
         
         try:
-            if packet.packet_type == PacketType.WAIT:
+            if packet.packet_type == PacketType.NONE:
                 reply = None
-            elif packet.packet_type == PacketType.PING:
-                reply = Packet(PacketType.PING)
             elif packet.packet_type == PacketType.GET:
                 if packet.data["type"] == "INFO":
                     reply = Packet(PacketType.DATA, {"data": self.server_info, "type": "SERVER_INFO"})
@@ -236,8 +234,7 @@ class Server:
                     self.log(f"CLIENT ATTEMPTED TO SEND NON-PACKET DATA:\n\t- Data: \"{data}\"\n\t- Traceback: [bold red]{traceback.format_exc()}", 3)
                     break
 
-                if data.packet_type != PacketType.PING:
-                    self.log(f"Receive: {data}", 1)
+                self.log(f"Receive: {data}", 1)
 
                 if data.packet_type == PacketType.DISCONNECT:
                     self.log("Client disconnected via packet.", 1)

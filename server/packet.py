@@ -14,7 +14,7 @@ class PacketType(Enum):
     MESSAGE_RECV = 2
     MESSAGE_SEND = 3
     SYSTEM_MESSAGE = 4
-    PING = 5
+    NONE = 5
     GET = 6
     DATA = 7
     ERROR = 8
@@ -22,6 +22,7 @@ class PacketType(Enum):
     WAIT = 10
     NOTIFICATION = 11
     STOP = 12
+
 
 @dataclass
 class Packet:
