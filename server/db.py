@@ -122,6 +122,10 @@ class Database:
 
         if not self.get_role_by_name("DefaultPerms"):
             self.create_role("DefaultPerms", 0, {})
+
+        # create the system user, no one can have the same UUID
+        if not self.user_exists("00000000-0000-0000-0000-000000000000"):
+            self.create_user("SYSTEM", "00000000-0000-0000-0000-000000000000")
             
         self.commit()
 

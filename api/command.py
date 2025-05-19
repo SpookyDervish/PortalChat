@@ -2,7 +2,8 @@ import inspect, argparse
 from enum import Enum
 from dataclasses import dataclass
 
-from api import command, Message, Channel
+from api.message import Message
+from api.channel import Channel
 
 
 command_registry = {}
@@ -24,7 +25,7 @@ class CommandContext:
     message: Message
 
 
-def command(name: str, required_permissions: list[Permission] = []):
+def command(name: str, usage: str, required_permissions: list[Permission] = []):
     def decorator(func):
         sig = inspect.signature(func)
         parser = argparse.ArgumentParser(prog=f"/{name}")
@@ -43,15 +44,28 @@ def command(name: str, required_permissions: list[Permission] = []):
             else:
                 parser.add_argument(f"--{param_name}", type=param_type, default=default)
 
-        def wrapper(args):
+        def wrapper(ctx: CommandContext, args):
             try:
                 parsed = parser.parse_args(args)
-                kwargs = vars(parsed)
-                func(**kwargs)
+                #kwargs = vars(parsed)
+                func(ctx, parsed)
             except SystemExit:
+                ctx.channel.send(f"Usage: {usage}")
                 pass # TODO: help message
 
         command_registry[name] = wrapper
-        print(command_registry)
         return wrapper
     return decorator
+
+
+
+
+#====! ACTUAL COMMANDS !====#
+#
+# note: Might need to add a cleaner way of doing this in the future
+#       as I add more commands.
+#
+
+@command("ping", "/ping")
+def ping(context: CommandContext, args):
+    context.channel.server.log(f"Hello from the ping command! {context, args}")

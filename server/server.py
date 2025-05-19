@@ -7,11 +7,13 @@ from datetime import datetime
 from time import sleep
 
 from textual.widgets import RichLog
-
 from rich.traceback import install
 from rich.console import Console
+
 from server.packet import Packet, PacketType, to_bytes, to_packet
 from server.db import Database
+
+from api import command, Channel, Message
 
 
 console = Console()
@@ -110,30 +112,74 @@ class Server:
         self.log("Disconnecting db...", 1)
         self.db.close()
 
+    def parse_command(self, message: str, channel_id: int, sender_info: dict):
+        message = message.removeprefix("/")
+        args = message.split()
+        command_name = args.pop(0)
+
+        # Construct a command context
+        channel_ctx = Channel({"channel_id": channel_id, "name": self.db.get_channel_name_by_id(channel_id), "server_id": self.db.get_server_from_channel(channel_id)[0]}, self)
+        message_ctx = Message({"content": message, "channel_id": channel_id, "channel_name": channel_ctx.name, "timestamp": datetime.now(), "server_id": channel_ctx.server_id}, self)
+        context = command.CommandContext(
+            channel_ctx,
+            message_ctx
+        )
+
+        # TODO: handle invalid command names
+        # run the command! :D
+        try:
+            command.command_registry[command_name](context, args)
+            self.log(f"{sender_info['username']} ran the /{command_name} command!")
+        except KeyError:
+            self.log(f"{sender_info['username']} tried running an invalid command.")
+
     def send_message(self, message: str, channel_id: int, sender_conn: socket.socket, sender_info: dict):
         """Send a message to all users and save the message to the DB."""
-        sender_name: str = sender_info["username"]
-        sender_uuid: str = sender_info["uuid"]
+        # if sender_info is None, that means that the message is a system msg
+        if sender_info:
+            sender_name: str = sender_info["username"]
+            sender_uuid: str = sender_info["uuid"]
 
-        if sender_name.strip() == "" or len(sender_name) > 25: # invalid username
-            sender_conn.sendall(to_bytes(Packet(
-                PacketType.NOTIFICATION,
-                "You can't send messages because your username is invalid."
-            )))
-            return False
+            if sender_uuid == "00000000-0000-0000-0000-000000000000":
+                sender_conn.sendall(to_bytes(Packet(
+                    PacketType.NOTIFICATION,
+                    "Don't try to pretend to be a system user. :P"
+                )))
+                return False
+        else:
+            sender_name = "SYSTEM"
+            sender_uuid = None
 
-        if not self.db.user_exists(sender_uuid):
-            self.log(f"Creating user because doesn't exist: {sender_uuid}")
-            self.db.create_user(sender_name, sender_uuid)
-            self.db.commit()
+        if sender_uuid:
+            if sender_name.strip() == "" or len(sender_name) > 25: # invalid username
+                sender_conn.sendall(to_bytes(Packet(
+                    PacketType.NOTIFICATION,
+                    "You can't send messages because your username is invalid."
+                )))
+                return False
 
-        current_username = self.db.get_user(sender_uuid)[1] 
-        if current_username != sender_name: # user has changed their username since their last msg
-            self.db.update_username(sender_uuid, sender_name)
-            self.log(f"Updated username for {sender_uuid} from {current_username} to {sender_name}")
-            
+            if not self.db.user_exists(sender_uuid):
+                self.log(f"Creating user because doesn't exist: {sender_uuid}")
+                self.db.create_user(sender_name, sender_uuid)
+                self.db.commit()
+
+            current_username = self.db.get_user(sender_uuid)[1] 
+            if current_username != sender_name: # user has changed their username since their last msg
+                self.db.update_username(sender_uuid, sender_name)
+                self.log(f"Updated username for {sender_uuid} from {current_username} to {sender_name}")
+
+        # was it a command?
+        if sender_uuid and message.startswith("/"):
+            # parse it and don't show the message to other people in the server
+            self.parse_command(message, channel_id, sender_info)
+            return True
+
+        # send the message to all users in the server
         self.log(f"@{sender_name} said \"{message}\" in channel ID [cyan]{channel_id}[/cyan].")
-        self.db.create_message_in_channel(channel_id, sender_uuid, sender_name, message)
+        if sender_uuid:
+            self.db.create_message_in_channel(channel_id, sender_uuid, sender_name, message)
+        else:
+            self.db.create_message_in_channel(channel_id, "00000000-0000-0000-0000-000000000000", "SYSTEM", message)
         self.log("Saving DB...")
         self.db.commit()
 
@@ -143,7 +189,8 @@ class Server:
             )
 
         for user in self.clients:
-            self.log(f"Sending packet to {user}: {packet}", 1)
+            if user == sender_conn: continue
+            self.log(f"Sending packet to {user}: {packet}", 2)
             user.send(to_bytes(packet))
 
         return True
@@ -288,7 +335,7 @@ class Server:
         if level < self.log_level:
             return
         
-        message = str(message)
+        #message = str(message)
         
         final_message = ""
 
