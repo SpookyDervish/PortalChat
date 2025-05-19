@@ -66,7 +66,7 @@ def scan_ip(ip):
             # get info about the server
             sock.recv(2048) # throw the "connection received" message out
             sock.send(to_bytes(Packet(PacketType.GET, {"type": "INFO"})))
-            response = to_packet(sock.recv(2048))
+            response = to_packet(sock.recv(2048))[0]
 
             sock.send(to_bytes(Packet(PacketType.DISCONNECT,None)))
             sock.close()

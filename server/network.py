@@ -7,6 +7,8 @@ class Network:
         self.buffer_size = 2048 * 4
         self.port = 5555
 
+        self.TIMEOUT = 1 # if a socket exceeds 1 second latency on a GOD DAMN LAN CONNECTION, then the packet must not have been received lol
+
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server = server_ip
         self.addr = (self.server, self.port)
@@ -31,6 +33,10 @@ class Network:
 
     def recv(self, blocking: bool = False) -> Packet:
         self.client.setblocking(blocking)
+
+        if blocking:
+            self.client.settimeout(self.TIMEOUT)
+
         try:
             response = self.client.recv(self.buffer_size)
         except (BlockingIOError, socket.error):

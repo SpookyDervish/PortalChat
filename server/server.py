@@ -229,7 +229,7 @@ class Server:
             try:
                 try:
                     recv_data = conn.recv(2048)
-                    data = to_packet(recv_data)
+                    data = to_packet(recv_data)[0]
                 except (msgpack.ExtraData, ValueError): # idk why it does this, but it still works lmao
                     pass
                 except (msgpack.FormatError, msgpack.StackError, msgpack.UnpackValueError) as e:

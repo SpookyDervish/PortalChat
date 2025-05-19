@@ -6,6 +6,9 @@ from datetime import datetime
 import msgpack
 
 
+unpacker = msgpack.Unpacker()
+
+
 class PacketType(Enum):
     CONNECTION_STARTED = 1
     MESSAGE_RECV = 2
@@ -41,11 +44,16 @@ def to_bytes(packet: Packet):
     return msgpack.packb(asdict(packet))
 
 def to_packet(data):
-    unpacked = msgpack.unpackb(data, raw=False) # convert the bytes to a dict
-    packet = Packet(**unpacked) # load that dict into the Packet dataclass
+    packets = []
+    unpacker.feed(data)
+    #unpacked = msgpack.unpackb(data, raw=False) # convert the bytes to a dict
 
-    # convert the packet_type from an int to an Enum
-    packet.packet_type = PacketType(packet.packet_type)
+    for unpacked in unpacker:
+        packet = Packet(**unpacked) # load that dict into the Packet dataclass
 
-    # return the packet
-    return packet
+        # convert the packet_type from an int to an Enum
+        packet.packet_type = PacketType(packet.packet_type)
+        packets.append(packet)
+
+    # return the packets
+    return packets
