@@ -30,7 +30,6 @@ class Packet:
     data: Any = None
     tag: str = None
 
-
 def to_bytes(packet: Packet):
     # convert the packet to a dict, and then convert it to be bytes
     # so it can be sent over the socket
