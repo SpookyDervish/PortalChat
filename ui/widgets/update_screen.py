@@ -65,7 +65,13 @@ class UpdateScreen(ModalScreen):
     def update(self):
         # pull new changes
         origin = self.repo.remotes.origin
-        origin.pull()
+
+        try:
+            origin.pull()
+        except GitCommandError:
+            self.notify("Portal failed to update! Make sure you haven't made any uncommited changes to the code.", title="Failed to Update!", severity="error")
+            self.dismiss()
+            return
 
         # restart the script
         python = sys.executable

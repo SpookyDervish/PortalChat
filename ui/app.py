@@ -74,9 +74,10 @@ class Portal(App):
         if not os.path.isfile('user_settings.ini'):
             self.init_settings_file()
         self.config.read("user_settings.ini")
+
         self.theme = conf_get(self.config, "Appearance", "theme")
 
-        self.desktop_notifier = DesktopNotifier(app_name="Portal")
+        self.desktop_notifier = DesktopNotifier(app_name="Portal", app_icon=Icon("assets/images/logo.png"))
 
         self.is_open = True
         self.n = None
