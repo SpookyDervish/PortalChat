@@ -96,17 +96,16 @@ class UpdateScreen(ModalScreen):
             bool: Is the current branch behind?
             int: How many commits is the current branch behind?
         """
-        current_branch = self.repo.active_branch
-
         try:
+            current_branch = self.repo.active_branch
+
             self.repo.remotes.origin.fetch()
-        except GitCommandError:
+
+            behind_count = sum(1 for c in self.repo.iter_commits(f"{current_branch}..origin/{current_branch}"))
+
+            return behind_count > 0, behind_count
+        except:
             self.notify("Failed to check for updates! Please check you have internet.", title="Woops!", severity="warning", timeout=10)
             self.dismiss()
             
             return
-        
-
-        behind_count = sum(1 for c in self.repo.iter_commits(f"{current_branch}..origin/{current_branch}"))
-    
-        return behind_count > 0, behind_count
