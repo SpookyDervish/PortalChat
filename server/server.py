@@ -1,4 +1,7 @@
+from __future__ import annotations
 import socket
+import threading
+
 import msgpack
 import sys, os
 import traceback
@@ -10,16 +13,20 @@ from textual.widgets import RichLog
 from rich.traceback import install
 from rich.console import Console
 
+from server.formats.network_format import NetworkConnection
+from server.formats.network_format_manager import NetworkFormatManager
 from server.packet import Packet, PacketType, to_bytes, to_packet
 from server.db import Database
 
 from api import command, Channel, Message
 
-
 console = Console()
 
 
 class Server:
+    def nf_log(self, source: str, text: str):
+        self.log(f"[bold][[blue_violet]{source}[/blue_violet]][/bold] {text}")
+
     def __init__(self, title: str, description: str = "", host: str = "", log_level: int = 1, rich_log: RichLog = None, interactive: bool = False):
         install(console=console)
         self.log_level = log_level
@@ -35,9 +42,15 @@ class Server:
         self.running = True
 
         self.log("Doing initial setup...", 1)
-        self.clients: list[socket.socket] = []
-        self.host = host
-        self.port = 5555
+        #self.clients: list[socket.socket] = []
+        #self.host = host
+        #self.port = 5555
+
+        self.ip = ""
+
+        self.network_format_manager = NetworkFormatManager()
+        self.network_format_manager.network_functions.on_client_open = self.handle_client
+        self.network_format_manager.network_functions.log = self.nf_log
 
         # create needed folders
         NEEDED_FOLDERS = ["portal_server", "portal_server/user_icons"]
@@ -52,6 +65,22 @@ class Server:
         return f"<{self.server_info['title']}>"
 
     def start(self):
+        #self.log(str(self.network_format_manager))
+        #exit(-1)
+
+        self.ip = self.get_ip()
+
+        self.network_format_manager.open()
+
+        self.log("Server is listening and ready to receive connections!")
+        self.log(f"IP: [bold green]{self.ip}[/bold green]")
+
+        if self.interactive:
+            self.log("Starting interactive terminal...", level=1)
+            start_new_thread(self.interactive_terminal, ())
+
+
+    def old_start(self):
         self.log("Creating socket...", 1)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.log("Attempting to bind socket..", level=1)
@@ -64,15 +93,7 @@ class Server:
 
         self.log(f"Server title is \"{self.server_info['title']}\"\n")
 
-        self.ip = self.get_ip()
-
         self.sock.listen()
-        self.log("Server is listening and ready to receive connections!")
-        self.log(f"IP: [bold green]{self.ip}[/bold green]")
-
-        if self.interactive:
-            self.log("Starting interactive terminal...", level=1)
-            start_new_thread(self.interactive_terminal, ())
 
         self.log("Starting main server accept loop...", level=1)
         start_new_thread(self.main_loop, ())
@@ -100,17 +121,14 @@ class Server:
                 conn.close()
                 continue
 
-            self.server_info["online"] += 1
-            self.clients.append(conn)
-
-            self.log(f"New connection! Address: {addr}")
             start_new_thread(self.handle_client, tuple([conn]))
 
     def stop(self):
         self.log("[bold red blink]Server is shutting down![/]")
         self.running = False
         self.log("Closing socket...", 1)
-        self.sock.close()
+        self.network_format_manager.close()
+        #self.sock.close()
         self.log("Disconnecting db...", 1)
         self.db.close()
 
@@ -135,7 +153,7 @@ class Server:
         except KeyError:
             self.log(f"{sender_info['username']} tried running an invalid command.")
 
-    def send_message(self, message: str, channel_id: int, sender_conn: socket.socket, sender_info: dict):
+    def send_message(self, message: str, channel_id: int, sender_conn: NetworkConnection, sender_info: dict):
         """Send a message to all users and save the message to the DB."""
         # if sender_info is None, that means that the message is a system msg
         if sender_info:
@@ -190,10 +208,11 @@ class Server:
                 {"message": message, "sender_name": sender_name, "timestamp": datetime.now(), "channel_id": channel_id, "channel_name": self.db.get_channel_name_by_id(channel_id), "server_id": self.db.get_server_from_channel(channel_id)[0], "server_ip": self.ip}
             )
 
-        for user in self.clients:
+        self.network_format_manager.send_to_all_clients(to_bytes(packet))
+        #for user in:
             #if user == sender_conn: continue
-            self.log(f"Sending packet to {user}: {packet}", 2)
-            user.send(to_bytes(packet))
+            #self.log(f"Sending packet to {user}: {packet}", 2)
+            #user.send()
 
         return True
 
@@ -207,7 +226,7 @@ class Server:
                     break
             except (EOFError, KeyboardInterrupt): break
 
-    def handle_packet(self, packet: Packet, conn: socket.socket):
+    def handle_packet(self, packet: Packet, conn: NetworkConnection):
         reply = None
         
         try:
@@ -267,43 +286,59 @@ class Server:
             reply.tag = packet.tag
         return reply
 
-    def handle_client(self, conn: socket.socket):
-        self.log("Started new thread for client.", level=1)
+    def handle_client(self, conn: NetworkConnection) -> bool:
+        self.log(f"New connection! Address: {conn.addr}")
 
-        conn.send(to_bytes(Packet(PacketType.CONNECTION_STARTED, None)))
+        if conn.addr[0] in self.BLOCKED_IPS:
+            self.log(f"Ignored connection from blocked IP: {conn.addr}", 3)
+            conn.close()
+            return False
 
-        while self.running:
-            try:
+        def client_loop():
+            self.server_info["online"] += 1
+
+            self.log("Started new thread for client.", level=1)
+
+            conn.send(to_bytes(Packet(PacketType.CONNECTION_STARTED, None)))
+
+            while self.network_format_manager.running:
                 try:
-                    recv_data = conn.recv(2048)
-                    data = to_packet(recv_data)[0]
-                except (msgpack.ExtraData, ValueError): # idk why it does this, but it still works lmao
-                    pass
-                except (msgpack.FormatError, msgpack.StackError, msgpack.UnpackValueError) as e:
-                    self.log(f"CLIENT ATTEMPTED TO SEND NON-PACKET DATA:\n\t- Data: \"{data}\"\n\t- Traceback: [bold red]{traceback.format_exc()}", 3)
+                    try:
+                        recv_data = conn.recv()
+                        data = to_packet(recv_data)[0]
+                    except (msgpack.ExtraData, ValueError):  # idk why it does this, but it still works lmao
+                        pass
+                    except (msgpack.FormatError, msgpack.StackError, msgpack.UnpackValueError) as e:
+                        self.log(
+                            f"CLIENT ATTEMPTED TO SEND NON-PACKET DATA:\n\t- Data: \"{data}\"\n\t- Traceback: [bold red]{traceback.format_exc()}",
+                            3)
+                        break
+
+                    self.log(f"Receive: {data}", 1)
+
+                    if data.packet_type == PacketType.DISCONNECT:
+                        self.log("Client disconnected via packet.", 1)
+                        break
+
+                    reply = self.handle_packet(data, conn)
+
+                    self.log(f"Send   : {reply}", 1)
+
+                    if reply != None:
+                        conn.sendall(to_bytes(reply))
+                except (socket.error, EOFError) as e:
+                    self.log(
+                        f"A client created a socket error. The connection will be closed.\n\t- Client: {conn.getsockname()}\n\t- Error: [bold red]{traceback.format_exc()}",
+                        3)
                     break
 
-                self.log(f"Receive: {data}", 1)
+            self.log(f"Closing connection to {conn.getsockname()}.")
+            conn.close()
+            self.server_info["online"] -= 1
 
-                if data.packet_type == PacketType.DISCONNECT:
-                    self.log("Client disconnected via packet.", 1)
-                    break
+        threading.Thread(target=client_loop).start()
 
-                reply = self.handle_packet(data, conn)
-
-                self.log(f"Send   : {reply}", 1)
-
-                if reply != None:
-                    conn.sendall(to_bytes(reply))
-            except (socket.error, EOFError) as e:
-                self.log(f"A client created a socket error. The connection will be closed.\n\t- Client: {conn.getsockname()}\n\t- Error: [bold red]{traceback.format_exc()}", 3)
-                break
-
-
-        self.log(f"Closing connection to {conn.getsockname()}.")
-        conn.close()
-        self.clients.remove(conn)
-        self.server_info["online"] -= 1
+        return True
 
     def get_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
