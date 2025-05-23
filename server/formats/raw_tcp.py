@@ -5,7 +5,6 @@ import threading
 from typing import Any
 
 import server.formats.network_format
-from server.formats.network_format import NetworkFormatFunctions
 
 class RawTcpConnection(server.formats.network_format.NetworkConnection):
     __socket: socket.socket = None
@@ -23,12 +22,13 @@ class RawTcpConnection(server.formats.network_format.NetworkConnection):
         return self.__socket.recv(2048)
 
     def close(self) -> None:
-        self.__socket.close()
+        if self.__socket.fileno() == -1:
+            self.__socket.close()
+
         self.__host.server_sockets.remove(self)
 
     def __init__(self, raw_tcp: RawTcp, conn: socket.socket, addr: Any):
         self.__host = raw_tcp
-        self.__host.network_functions.log("Raw TCP", "beep")
         self.__socket = conn
         self.addr = addr
         super().__init__()
