@@ -312,6 +312,7 @@ class Server:
                         self.log(
                             f"CLIENT ATTEMPTED TO SEND NON-PACKET DATA:\n\t- Data: \"{data}\"\n\t- Traceback: [bold red]{traceback.format_exc()}",
                             3)
+                        conn.close()
                         break
 
                     self.log(f"Receive: {data}", 1)
@@ -330,6 +331,7 @@ class Server:
                     self.log(
                         f"A client created a socket error. The connection will be closed.\n\t- Client: {conn.getsockname()}\n\t- Error: [bold red]{traceback.format_exc()}",
                         3)
+                    conn.close()
                     break
 
             self.log(f"Closing connection to {conn.getsockname()}.")

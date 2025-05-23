@@ -42,6 +42,7 @@ class NetworkFormat:
         The state of the server by the derived class.
         The functions set in network_functions are to be called by the derived class on the conditions described.
         """
+        if self.running: return
         if (self.network_functions is None
          or self.network_functions.on_client_open is None
          or self.network_functions.log is None):
@@ -52,4 +53,9 @@ class NetworkFormat:
     def close(self) -> None:
         """Closes a NetworkFormat server.
         On close, all clients are to immediately close as soon as possible."""
+        if not self.running: return
+
+        for network_connection in self.network_connections:
+            network_connection.close()
+
         pass

@@ -168,6 +168,8 @@ class Portal(App):
         channel_list = self.query_one(ChannelList)
         member_list = self.query_one(MemberList)
 
+        self.app.notify("we got a packet..?")
+
         while self.is_open:
             packet = self.packet_queue.get()
 
