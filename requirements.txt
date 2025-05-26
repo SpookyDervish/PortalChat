@@ -5,3 +5,4 @@ gitpython
 msgpack
 playsound==1.2.2
 desktop-notifier
+websockets
